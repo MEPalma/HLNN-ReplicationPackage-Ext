@@ -56,6 +56,19 @@ task JavaEvaluator(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
 }
 
+
+task JavaScriptPreprocessor(type: JavaExec) {
+    args findProperty("args").toString().split(" ") ?: ""
+    mainClass.set('preprocessor.javascriptpreprocessor.JavaScriptPreprocessorKt')
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task JavaScriptEvaluator(type: JavaExec) {
+    args findProperty("args").toString().split(" ") ?: ""
+    mainClass.set('evaluator.JavaScriptEvaluatorKt')
+    classpath = sourceSets.main.runtimeClasspath
+}
+
 task KotlinPreprocessor(type: JavaExec) {
     args findProperty("args").toString().split(" ") ?: ""
     mainClass.set('preprocessor.kotlinpreprocessor.KotlinPreprocessorKt')

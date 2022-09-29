@@ -13,7 +13,7 @@ fun String.tryToETAS(
     resolver: (ParseTree, Vocabulary, Array<String>) -> ETA?,
     lexerChannels: Array<Int> = arrayOf(Token.HIDDEN_CHANNEL),
     antlrErrorListener: ANTLRErrorStrategy = DefaultErrorStrategy(),
-    withErrorListeners: Boolean = true
+    withErrorListeners: Boolean = false
 ): Array<ETA>? =
     try {
         val charStream = CharStreams.fromString(this)
@@ -47,8 +47,8 @@ fun String.tryToETAS(
                 resolver(segment, lexerVocab, ruleNames)?.let { eta ->
                     etas.add(eta)
                 } ?: segment.isProduction()?.let { production ->
-                    production.children.asReversed().forEach { child -> fringe.addFirst(child) }
-                } ?: error("Unknown Grammar Segment: $segment")
+                    production.children?.asReversed()?.forEach { child -> fringe.addFirst(child) }
+                } ?: println("Unknown Grammar Segment: $segment")
             }
         }
 
@@ -75,7 +75,7 @@ fun String.tryToETAS(
 
         etas.toTypedArray()
     } catch (e: Exception) {
-//        e.printStackTrace()
+        e.printStackTrace()
         null
     }
 

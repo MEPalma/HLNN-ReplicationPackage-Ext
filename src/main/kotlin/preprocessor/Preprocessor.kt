@@ -174,7 +174,9 @@ abstract class Preprocessor(
 
     open fun render(filepath: String) =
         File(filepath).bufferedReader().forEachLine { line ->
+            print(line)
             line.tryJSONHighlightedSourceFromJSON()?.let { jheta ->
+                print(jheta)
                 toHighlightedSource(jheta.hetas, jheta.source.source).println()
             }
         }

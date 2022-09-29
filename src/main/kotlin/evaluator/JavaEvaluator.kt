@@ -21,4 +21,5 @@ class JavaEvaluator(
 )
 
 fun main(args: Array<String>) =
-    JavaEvaluator(args).run()
+    JavaEvaluator(arrayOf("fileToHTMLBrute","test.java")).run()
+//    JavaEvaluator(args).run()
