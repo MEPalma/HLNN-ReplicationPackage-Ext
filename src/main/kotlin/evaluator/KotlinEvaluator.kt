@@ -21,4 +21,6 @@ class KotlinEvaluator(
 )
 
 fun main(args: Array<String>) =
-    KotlinEvaluator(args).run()
+    KotlinEvaluator(arrayOf("fileToHTMLBrute","src/main/kotlin/highlighter/kotlinHighlighter/KotlinGrammaticalHighlighter.kt")).run()
+
+//KotlinEvaluator(args).run()
