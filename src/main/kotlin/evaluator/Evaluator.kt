@@ -10,11 +10,21 @@ import highlighter.GrammaticalHighlighter
 import highlighter.highlightedAs
 import highlighter.toHighlightedHTML
 import highlighter.tryToETAS
+import org.antlr.v4.gui.TreeViewer
 import org.antlr.v4.runtime.*
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import utils.*
+import java.awt.Dimension
+import java.awt.Font
+import java.awt.GridLayout
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
 import java.io.*
 import java.util.*
+import javax.swing.JFrame
+import javax.swing.JPanel
+import javax.swing.JScrollPane
+import javax.swing.JTextPane
 
 abstract class Evaluator(
     val userArgs: Array<String>,
@@ -397,6 +407,52 @@ abstract class Evaluator(
         return python_delay_ns
     }
 
+    private fun renderTree() {
+        val jframe = JFrame("TreeViewer")
+        jframe.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+        jframe.size = Dimension(800, 800)
+        jframe.contentPane.layout = GridLayout(2, 1, 0, 0)
+
+        val textPane = JTextPane()
+        val treePane = JPanel(GridLayout(1, 1, 0, 2))
+        textPane.font = Font(Font.MONOSPACED, Font.PLAIN, 12)
+
+        fun renderText(src: String) {
+            val charStream = CharStreams.fromString(src)
+            val lexer = this.lexerOf(charStream)
+            val tokenStreams = CommonTokenStream(lexer)
+            val parser = parserOf(tokenStreams)
+            val parseTree = startRuleOf(parser)
+            val treeView = TreeViewer(parser.ruleNames.toList(), parseTree)
+
+            val scrollPane = JScrollPane(treeView)
+            scrollPane.verticalScrollBar.unitIncrement = 16
+            scrollPane.horizontalScrollBar.unitIncrement = 16
+
+            treePane.removeAll()
+            treePane.add(scrollPane)
+            treePane.repaint()
+            treePane.revalidate()
+        }
+
+        textPane.addKeyListener(object : KeyAdapter() {
+            var tmpText: String? = null
+            override fun keyReleased(e: KeyEvent?) {
+                // TODO: use swing worker pattern.
+                val txt = textPane.text
+                if (txt != tmpText) {
+                    renderText(textPane.text)
+                    tmpText = txt
+                }
+            }
+        })
+
+        jframe.contentPane.add(treePane)
+        jframe.contentPane.add(textPane)
+        jframe.setLocationRelativeTo(null)
+        jframe.isVisible = true
+    }
+
     private fun fileToHTMLBrute(filepath: String) {
         File(filepath).readText().let { src ->
             var startRule: RuleContext? = null
@@ -538,17 +594,24 @@ abstract class Evaluator(
             //
             "perFileTimeBrute" ->
                 perFileTimeBrute(REPEATS)
+
             "perFileTimeModel" ->
                 perFileTimeModel(userArgs[1], REPEATS)
+
             "perFileTimePygments" ->
                 perFileTimePygments(REPEATS)
             //
             "fileToHTMLBrute" ->
                 fileToHTMLBrute(userArgs[1])
+
             "fileToHTMLModel" ->
                 fileToHTMLModel(userArgs[1], userArgs[2])
+
             "fileToHTMLPygments" ->
                 fileToHTMLPygments(userArgs[1])
+            //
+            "renderTree" ->
+                renderTree()
             //
             else -> println("Unknown task arguments ${userArgs.toList()}")
         }
