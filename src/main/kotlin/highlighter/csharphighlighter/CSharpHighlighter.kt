@@ -6,7 +6,7 @@ import common.HCode.*
 import common.HCode.Companion.hetaOf
 import common.HETA
 
-fun javaLexicalHighlighter(eta: ETA): HETA =
+fun csharpLexicalHighlighter(eta: ETA): HETA =
     when (eta.tokenRule) {
         in hashSetOf(
             CSharpLexer.ABSTRACT,
@@ -50,7 +50,6 @@ fun javaLexicalHighlighter(eta: ETA): HETA =
             CSharpLexer.LONG,
             CSharpLexer.NAMESPACE,
             CSharpLexer.NEW,
-            CSharpLexer.NULL_,
             CSharpLexer.OBJECT,
             CSharpLexer.OPERATOR,
             CSharpLexer.OUT,
@@ -73,7 +72,6 @@ fun javaLexicalHighlighter(eta: ETA): HETA =
             CSharpLexer.SWITCH,
             CSharpLexer.THIS,
             CSharpLexer.THROW,
-            CSharpLexer.TRUE,
             CSharpLexer.TRY,
             CSharpLexer.TYPEOF,
             CSharpLexer.UINT,
@@ -88,17 +86,28 @@ fun javaLexicalHighlighter(eta: ETA): HETA =
             CSharpLexer.WHILE
         ) -> hetaOf(eta, KEYWORD)
         in hashSetOf(
-            Java8Lexer.IntegerLiteral,
-            Java8Lexer.BooleanLiteral,
-            Java8Lexer.BooleanLiteral,
-            Java8Lexer.FloatingPointLiteral,
-            Java8Lexer.NullLiteral
+            CSharpLexer.LITERAL_ACCESS,
+            CSharpLexer.INTEGER_LITERAL,
+            CSharpLexer.HEX_INTEGER_LITERAL,
+            CSharpLexer.BIN_INTEGER_LITERAL,
+            CSharpLexer.REAL_LITERAL,
+            CSharpLexer.NULL_,
+            CSharpLexer.TRUE,
+            CSharpLexer.FALSE,
         ) -> hetaOf(eta, LITERAL)
         in hashSetOf(
-            Java8Lexer.StringLiteral, Java8Lexer.CharacterLiteral
+            CSharpLexer.CHARACTER_LITERAL,
+            CSharpLexer.REGULAR_STRING,
+            CSharpLexer.VERBATIUM_STRING,
+            CSharpLexer.INTERPOLATED_REGULAR_STRING_START,
+            CSharpLexer.INTERPOLATED_VERBATIUM_STRING_START
         ) -> hetaOf(eta, CHAR_STRING_LITERAL)
         in hashSetOf(
-            Java8Lexer.COMMENT, Java8Lexer.LINE_COMMENT
+            CSharpLexer.SINGLE_LINE_DOC_COMMENT,
+            CSharpLexer.EMPTY_DELIMITED_DOC_COMMENT,
+            CSharpLexer.DELIMITED_DOC_COMMENT,
+            CSharpLexer.SINGLE_LINE_COMMENT,
+            CSharpLexer.DELIMITED_COMMENT,
         ) -> hetaOf(eta, COMMENT)
         else -> hetaOf(eta, ANY)
     }
