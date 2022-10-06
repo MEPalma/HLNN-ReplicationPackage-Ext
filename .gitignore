@@ -98,4 +98,5 @@ $RECYCLE.BIN/
 *.lnk
 
 # Test Files
+out.html
 testFiles/

@@ -2,9 +2,8 @@ package preprocessor.javascriptpreprocessor
 
 import JavaScriptLexer
 import JavaScriptParser
-import highlighter.javaScriptHighlighter.javaScriptLexicalHighlighter
 import highlighter.javaScriptHighlighter.JavaScriptGrammaticalHighlighter
-import highlighter.javahighlighter.javaLexicalHighlighter
+import highlighter.javaScriptHighlighter.javaScriptSemiLexicalHighlighter
 import preprocessor.Preprocessor
 import utils.toResourcePath
 
@@ -17,7 +16,7 @@ class JavaScriptPreprocessor(userArgs: Array<String>) : Preprocessor(
     parserOf = { JavaScriptParser(it) },
     startRuleOf = { (it as JavaScriptParser).program() },
     //
-    lexicalHighlighter = { javaScriptLexicalHighlighter(it) },
+    lexicalHighlighter = { javaScriptSemiLexicalHighlighter(it) },
     grammaticalHighlighter = JavaScriptGrammaticalHighlighter(),
 )
 

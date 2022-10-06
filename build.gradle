@@ -16,8 +16,10 @@ dependencies {
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: '1.5.20'
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1-native-mt'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
+    implementation 'junit:junit:4.13.1'
+    implementation 'io.mockk:mockk:1.12.8'
+    testImplementation 'io.mockk:mockk:1.12.8'
+
     // https://mvnrepository.com/artifact/org.antlr/antlr4
     antlr 'org.antlr:antlr4:4.9.2'
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-kotlin

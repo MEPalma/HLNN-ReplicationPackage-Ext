@@ -452,6 +452,7 @@ identifier
     : Identifier
     | NonStrictLet
     | Async
+    | Yield
     ;
 
 reservedWord

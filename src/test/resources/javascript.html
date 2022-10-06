@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<style>
+.ANY {
+    color: black;
+    font-weight: normal;
+    font-style: normal;
+}
+.KEYWORD {
+    color: blue;
+    font-weight: bold;
+    font-style: normal;
+}
+.LITERAL {
+    color: lightskyblue;
+    font-weight: bold;
+    font-style: normal;
+}
+.CHAR_STRING_LITERAL {
+    color: darkgoldenrod;
+    font-weight: normal;
+    font-style: normal;
+}
+.COMMENT {
+    color: grey;
+    font-weight: normal;
+    font-style: italic;
+}
+.CLASS_DECLARATOR {
+    color: crimson;
+    font-weight: bold;
+    font-style: normal;
+}
+.FUNCTION_DECLARATOR {
+    color: fuchsia;
+    font-weight: bold;
+    font-style: normal;
+}
+.VARIABLE_DECLARATOR {
+    color: purple;
+    font-weight: bold;
+    font-style: normal;
+}
+.TYPE_IDENTIFIER {
+    color: darkgreen;
+    font-weight: bold;
+    font-style: normal;
+}
+.FUNCTION_IDENTIFIER {
+    color: dodgerblue;
+    font-weight: normal;
+    font-style: normal;
+}
+.FIELD_IDENTIFIER {
+    color: coral;
+    font-weight: normal;
+    font-style: normal;
+}
+.ANNOTATION_DECLARATOR {
+    color: lightslategray;
+    font-weight: lighter;
+    font-style: italic;
+}
+</style>
+<pre>
+<code class="COMMENT">// test.js</code><code class="ANY">
+</code><code class="KEYWORD">import</code><code class="ANY"> </code><code class="ANY">antlr4</code><code class="ANY"> </code><code class="ANY">from</code><code class="ANY"> </code><code class="CHAR_STRING_LITERAL">'antlr4'</code><code class="ANY">;</code><code class="ANY">
+</code><code class="KEYWORD">import</code><code class="ANY"> </code><code class="ANY">MyGrammarLexer</code><code class="ANY"> </code><code class="ANY">from</code><code class="ANY"> </code><code class="CHAR_STRING_LITERAL">'./QueryLexer.js'</code><code class="ANY">;</code><code class="ANY">
+</code><code class="KEYWORD">import</code><code class="ANY"> </code><code class="ANY">MyGrammarParser</code><code class="ANY"> </code><code class="ANY">from</code><code class="ANY"> </code><code class="CHAR_STRING_LITERAL">'./QueryParser.js'</code><code class="ANY">;</code><code class="ANY">
+</code><code class="KEYWORD">import</code><code class="ANY"> </code><code class="ANY">MyGrammarListener</code><code class="ANY"> </code><code class="ANY">from</code><code class="ANY"> </code><code class="CHAR_STRING_LITERAL">'./QueryListener.js'</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">
+</code><code class="KEYWORD">const</code><code class="ANY"> </code><code class="VARIABLE_DECLARATOR">input</code><code class="ANY"> </code><code class="KEYWORD">=</code><code class="ANY"> </code><code class="CHAR_STRING_LITERAL">"field = 123 AND items in (1,2,3)"</code><code class="ANY">;</code><code class="ANY">
+</code><code class="KEYWORD">const</code><code class="ANY"> </code><code class="VARIABLE_DECLARATOR">chars</code><code class="ANY"> </code><code class="KEYWORD">=</code><code class="ANY"> </code><code class="KEYWORD">new</code><code class="ANY"> </code><code class="ANY">antlr4</code><code class="ANY">.</code><code class="TYPE_IDENTIFIER">InputStream</code><code class="ANY">(</code><code class="ANY">input</code><code class="ANY">)</code><code class="ANY">;</code><code class="ANY">
+</code><code class="KEYWORD">const</code><code class="ANY"> </code><code class="VARIABLE_DECLARATOR">lexer</code><code class="ANY"> </code><code class="KEYWORD">=</code><code class="ANY"> </code><code class="KEYWORD">new</code><code class="ANY"> </code><code class="TYPE_IDENTIFIER">MyGrammarLexer</code><code class="ANY">(</code><code class="ANY">chars</code><code class="ANY">)</code><code class="ANY">;</code><code class="ANY">
+</code><code class="KEYWORD">const</code><code class="ANY"> </code><code class="VARIABLE_DECLARATOR">tokens</code><code class="ANY"> </code><code class="KEYWORD">=</code><code class="ANY"> </code><code class="KEYWORD">new</code><code class="ANY"> </code><code class="ANY">antlr4</code><code class="ANY">.</code><code class="TYPE_IDENTIFIER">CommonTokenStream</code><code class="ANY">(</code><code class="ANY">lexer</code><code class="ANY">)</code><code class="ANY">;</code><code class="ANY">
+</code><code class="KEYWORD">const</code><code class="ANY"> </code><code class="VARIABLE_DECLARATOR">parser</code><code class="ANY"> </code><code class="KEYWORD">=</code><code class="ANY"> </code><code class="KEYWORD">new</code><code class="ANY"> </code><code class="TYPE_IDENTIFIER">MyGrammarParser</code><code class="ANY">(</code><code class="ANY">tokens</code><code class="ANY">)</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">parser</code><code class="ANY">.</code><code class="FIELD_IDENTIFIER">buildParseTrees</code><code class="ANY"> </code><code class="KEYWORD">=</code><code class="ANY"> </code><code class="LITERAL">true</code><code class="ANY">
+</code><code class="KEYWORD">const</code><code class="ANY"> </code><code class="VARIABLE_DECLARATOR">tree</code><code class="ANY"> </code><code class="KEYWORD">=</code><code class="ANY"> </code><code class="ANY">parser</code><code class="ANY">.</code><code class="FUNCTION_IDENTIFIER">MyQuery</code><code class="ANY">(</code><code class="ANY">)</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">
+</code><code class="KEYWORD">const</code><code class="ANY"> </code><code class="VARIABLE_DECLARATOR">x</code><code class="ANY"> </code><code class="KEYWORD">=</code><code class="ANY"> </code><code class="FUNCTION_IDENTIFIER">BigInt</code><code class="ANY">(</code><code class="ANY">Number</code><code class="ANY">.</code><code class="FIELD_IDENTIFIER">MAX_SAFE_INTEGER</code><code class="ANY">)</code><code class="ANY">;</code><code class="ANY"> </code><code class="COMMENT">// 9007199254740991n</code><code class="ANY">
+</code><code class="ANY">
+</code><code class="KEYWORD">const</code><code class="ANY"> </code><code class="VARIABLE_DECLARATOR">myFunc</code><code class="ANY"> </code><code class="KEYWORD">=</code><code class="ANY"> </code><code class="KEYWORD">function</code><code class="ANY">(</code><code class="ANY">input</code><code class="ANY">,</code><code class="ANY"> </code><code class="ANY">input2</code><code class="ANY">)</code><code class="ANY">{</code><code class="ANY">
+</code><code class="ANY">	</code><code class="KEYWORD">return</code><code class="ANY"> </code><code class="ANY">input</code><code class="ANY"> </code><code class="ANY">*</code><code class="ANY"> </code><code class="ANY">input2</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">}</code><code class="ANY">;</code><code class="ANY">
+</code><code class="KEYWORD">const</code><code class="ANY"> </code><code class="VARIABLE_DECLARATOR">yield</code><code class="ANY"> </code><code class="KEYWORD">=</code><code class="ANY"> </code><code class="LITERAL">4</code><code class="ANY">;</code><code class="ANY">
+</code><code class="KEYWORD">const</code><code class="ANY"> </code><code class="VARIABLE_DECLARATOR">async</code><code class="ANY"> </code><code class="KEYWORD">=</code><code class="ANY"> </code><code class="LITERAL">5</code><code class="ANY">;</code><code class="ANY">
+</code><code class="KEYWORD">var</code><code class="ANY"> </code><code class="VARIABLE_DECLARATOR">let</code><code class="ANY"> </code><code class="KEYWORD">=</code><code class="ANY"> </code><code class="LITERAL">10</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">
+</code><code class="KEYWORD">function</code><code class="ANY">*</code><code class="ANY"> </code><code class="FUNCTION_DECLARATOR">foo</code><code class="ANY">(</code><code class="ANY">index</code><code class="ANY">)</code><code class="ANY"> </code><code class="ANY">{</code><code class="ANY">
+</code><code class="ANY">  </code><code class="KEYWORD">while</code><code class="ANY"> </code><code class="ANY">(</code><code class="ANY">index</code><code class="ANY"> </code><code class="ANY"><</code><code class="ANY"> </code><code class="LITERAL">2</code><code class="ANY">)</code><code class="ANY"> </code><code class="ANY">{</code><code class="ANY">
+</code><code class="ANY">    </code><code class="KEYWORD">yield</code><code class="ANY"> </code><code class="ANY">index</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">    </code><code class="ANY">index</code><code class="ANY">++</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">  </code><code class="ANY">}</code><code class="ANY">
+</code><code class="ANY">}</code><code class="ANY">
+</code><code class="ANY">
+</code><code class="KEYWORD">async</code><code class="ANY"> </code><code class="KEYWORD">function</code><code class="ANY"> </code><code class="FUNCTION_DECLARATOR">asyncCall</code><code class="ANY">(</code><code class="ANY">)</code><code class="ANY"> </code><code class="ANY">{</code><code class="ANY">
+</code><code class="ANY">  </code><code class="ANY">console</code><code class="ANY">.</code><code class="FUNCTION_IDENTIFIER">log</code><code class="ANY">(</code><code class="CHAR_STRING_LITERAL">'calling'</code><code class="ANY">)</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">  </code><code class="KEYWORD">const</code><code class="ANY"> </code><code class="VARIABLE_DECLARATOR">result</code><code class="ANY"> </code><code class="KEYWORD">=</code><code class="ANY"> </code><code class="KEYWORD">await</code><code class="ANY"> </code><code class="FUNCTION_IDENTIFIER">resolveAfter2Seconds</code><code class="ANY">(</code><code class="ANY">)</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">  </code><code class="ANY">console</code><code class="ANY">.</code><code class="FUNCTION_IDENTIFIER">log</code><code class="ANY">(</code><code class="ANY">result</code><code class="ANY">)</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">  </code><code class="COMMENT">// expected output: "resolved"</code><code class="ANY">
+</code><code class="ANY">}</code><code class="ANY">
+</code><code class="ANY">
+</code><code class="ANY">
+</code><code class="KEYWORD">const</code><code class="ANY"> </code><code class="VARIABLE_DECLARATOR">hero</code><code class="ANY"> </code><code class="KEYWORD">=</code><code class="ANY"> </code><code class="ANY">{</code><code class="ANY">
+</code><code class="ANY">  </code><code class="FIELD_IDENTIFIER">name</code><code class="ANY">:</code><code class="ANY"> </code><code class="CHAR_STRING_LITERAL">'Batman'</code><code class="ANY">
+</code><code class="ANY">}</code><code class="ANY">;</code><code class="ANY">
+</code><code class="COMMENT">// Dot property accessor</code><code class="ANY">
+</code><code class="ANY">hero</code><code class="ANY">.</code><code class="FIELD_IDENTIFIER">name</code><code class="ANY">;</code><code class="ANY"> </code><code class="COMMENT">// => 'Batman'</code><code class="ANY">
+</code><code class="ANY">
+</code><code class="ANY">
+</code><code class="KEYWORD">var</code><code class="ANY"> </code><code class="VARIABLE_DECLARATOR">myArray</code><code class="ANY"> </code><code class="KEYWORD">=</code><code class="ANY"> </code><code class="ANY">[</code><code class="LITERAL">0</code><code class="ANY">,</code><code class="ANY"> </code><code class="LITERAL">1</code><code class="ANY">,</code><code class="ANY"> </code><code class="LITERAL">2</code><code class="ANY">]</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">
+</code><code class="ANY">myArray</code><code class="ANY">[</code><code class="LITERAL">0</code><code class="ANY">]</code><code class="ANY">.</code><code class="FIELD_IDENTIFIER">a</code><code class="ANY">.</code><code class="FUNCTION_IDENTIFIER">b</code><code class="ANY">(</code><code class="ANY">)</code><code class="ANY">.</code><code class="FIELD_IDENTIFIER">c</code><code class="ANY">.</code><code class="FIELD_IDENTIFIER">d</code><code class="ANY">[</code><code class="LITERAL">0</code><code class="ANY">]</code><code class="ANY">.</code><code class="FUNCTION_IDENTIFIER">e</code><code class="ANY">(</code><code class="ANY">)</code><code class="ANY">[</code><code class="LITERAL">1</code><code class="ANY">]</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">
+</code><code class="KEYWORD">class</code><code class="ANY"> </code><code class="CLASS_DECLARATOR">Visitor</code><code class="ANY"> </code><code class="KEYWORD">extends</code><code class="ANY"> </code><code class="TYPE_IDENTIFIER">Bla</code><code class="ANY"> </code><code class="ANY">{</code><code class="ANY">
+</code><code class="ANY">  </code><code class="FUNCTION_DECLARATOR">exitStuff</code><code class="ANY">(</code><code class="ANY">ctx</code><code class="ANY">)</code><code class="ANY"> </code><code class="ANY">{</code><code class="ANY">}</code><code class="ANY">
+</code><code class="ANY">  </code><code class="FUNCTION_DECLARATOR">visitChildren</code><code class="ANY">(</code><code class="ANY">ctx</code><code class="ANY">)</code><code class="ANY"> </code><code class="ANY">{</code><code class="ANY">
+</code><code class="ANY">   </code><code class="KEYWORD">if</code><code class="ANY"> </code><code class="ANY">(</code><code class="ANY">!</code><code class="ANY">ctx</code><code class="ANY">)</code><code class="ANY"> </code><code class="ANY">{</code><code class="ANY">
+</code><code class="ANY">     </code><code class="KEYWORD">return</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">   </code><code class="ANY">}</code><code class="ANY">
+</code><code class="ANY">
+</code><code class="ANY">    </code><code class="KEYWORD">if</code><code class="ANY"> </code><code class="ANY">(</code><code class="ANY">ctx</code><code class="ANY">.</code><code class="FIELD_IDENTIFIER">children</code><code class="ANY">)</code><code class="ANY"> </code><code class="ANY">{</code><code class="ANY">
+</code><code class="ANY">      </code><code class="KEYWORD">return</code><code class="ANY"> </code><code class="ANY">ctx</code><code class="ANY">.</code><code class="FIELD_IDENTIFIER">children</code><code class="ANY">.</code><code class="FUNCTION_IDENTIFIER">map</code><code class="ANY">(</code><code class="ANY">child</code><code class="ANY"> </code><code class="ANY">=></code><code class="ANY"> </code><code class="ANY">{</code><code class="ANY">
+</code><code class="ANY">	</code><code class="KEYWORD">const</code><code class="ANY"> </code><code class="VARIABLE_DECLARATOR">bla</code><code class="ANY"> </code><code class="KEYWORD">=</code><code class="ANY"> </code><code class="CHAR_STRING_LITERAL">"test"</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">        </code><code class="KEYWORD">if</code><code class="ANY"> </code><code class="ANY">(</code><code class="ANY">child</code><code class="ANY">.</code><code class="FIELD_IDENTIFIER">children</code><code class="ANY"> </code><code class="ANY">&&</code><code class="ANY"> </code><code class="ANY">child</code><code class="ANY">.</code><code class="FIELD_IDENTIFIER">children</code><code class="ANY">.</code><code class="FIELD_IDENTIFIER">length</code><code class="ANY"> </code><code class="ANY">!=</code><code class="ANY"> </code><code class="LITERAL">0</code><code class="ANY">)</code><code class="ANY"> </code><code class="ANY">{</code><code class="ANY">
+</code><code class="ANY">          </code><code class="KEYWORD">return</code><code class="ANY"> </code><code class="ANY">child</code><code class="ANY">.</code><code class="FUNCTION_IDENTIFIER">accept</code><code class="ANY">(</code><code class="KEYWORD">this</code><code class="ANY">)</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">        </code><code class="ANY">}</code><code class="ANY"> </code><code class="KEYWORD">else</code><code class="ANY"> </code><code class="ANY">{</code><code class="ANY">
+</code><code class="ANY">          </code><code class="KEYWORD">return</code><code class="ANY"> </code><code class="ANY">child</code><code class="ANY">.</code><code class="FUNCTION_IDENTIFIER">getText</code><code class="ANY">(</code><code class="ANY">)</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">        </code><code class="ANY">}</code><code class="ANY">
+</code><code class="ANY">      </code><code class="ANY">}</code><code class="ANY">)</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">    </code><code class="ANY">}</code><code class="ANY">
+</code><code class="ANY">  </code><code class="ANY">}</code><code class="ANY">
+</code><code class="ANY">}</code><code class="ANY">
+</code><code class="ANY">tree</code><code class="ANY">.</code><code class="FUNCTION_IDENTIFIER">accept</code><code class="ANY">(</code><code class="KEYWORD">new</code><code class="ANY"> </code><code class="TYPE_IDENTIFIER">Visitor</code><code class="ANY">(</code><code class="ANY">)</code><code class="ANY">)</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">
+</code><code class="KEYWORD">class</code><code class="ANY"> </code><code class="CLASS_DECLARATOR">MyGrammarListener</code><code class="ANY"> </code><code class="KEYWORD">extends</code><code class="ANY"> </code><code class="TYPE_IDENTIFIER">ParseTreeListener</code><code class="ANY"> </code><code class="ANY">{</code><code class="ANY">
+</code><code class="ANY">    </code><code class="FUNCTION_DECLARATOR">constructor</code><code class="ANY">(</code><code class="ANY">)</code><code class="ANY"> </code><code class="ANY">{</code><code class="ANY">
+</code><code class="ANY">        </code><code class="KEYWORD">super</code><code class="ANY">(</code><code class="ANY">)</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">    </code><code class="ANY">}</code><code class="ANY">
+</code><code class="ANY">   </code><code class="ANY">
+</code><code class="ANY">    </code><code class="FUNCTION_DECLARATOR">enterKey</code><code class="ANY">(</code><code class="ANY">ctx</code><code class="ANY">)</code><code class="ANY"> </code><code class="ANY">{</code><code class="ANY">
+</code><code class="ANY">	</code><code class="FUNCTION_IDENTIFIER">doStuff</code><code class="ANY">(</code><code class="ANY">)</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">	</code><code class="FUNCTION_IDENTIFIER">doStuff</code><code class="ANY">(</code><code class="ANY">)</code><code class="ANY">
+</code><code class="ANY">	</code><code class="ANY">hero</code><code class="ANY">[</code><code class="CHAR_STRING_LITERAL">"name"</code><code class="ANY">]</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">	</code><code class="FUNCTION_IDENTIFIER">getList</code><code class="ANY">(</code><code class="ANY">)</code><code class="ANY">.</code><code class="FUNCTION_IDENTIFIER">add</code><code class="ANY">(</code><code class="KEYWORD">new</code><code class="ANY"> </code><code class="TYPE_IDENTIFIER">Element</code><code class="ANY">(</code><code class="ANY">)</code><code class="ANY">)</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">        </code><code class="FUNCTION_IDENTIFIER">getList</code><code class="ANY">(</code><code class="ANY">)</code><code class="ANY">.</code><code class="FUNCTION_IDENTIFIER">add</code><code class="ANY">(</code><code class="KEYWORD">new</code><code class="ANY"> </code><code class="TYPE_IDENTIFIER">Element</code><code class="ANY">(</code><code class="ANY">)</code><code class="ANY">)</code><code class="ANY">
+</code><code class="ANY">	</code><code class="KEYWORD">var</code><code class="ANY"> </code><code class="VARIABLE_DECLARATOR">x</code><code class="ANY"> </code><code class="KEYWORD">=</code><code class="ANY"> </code><code class="LITERAL">13</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">        </code><code class="KEYWORD">let</code><code class="ANY"> </code><code class="VARIABLE_DECLARATOR">i</code><code class="ANY"> </code><code class="KEYWORD">=</code><code class="ANY"> </code><code class="LITERAL">33</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">        </code><code class="KEYWORD">let</code><code class="ANY"> </code><code class="VARIABLE_DECLARATOR">nn</code><code class="ANY"> </code><code class="KEYWORD">=</code><code class="ANY"> </code><code class="LITERAL">null</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">    </code><code class="ANY">}</code><code class="ANY">
+</code><code class="ANY">    </code><code class="FUNCTION_DECLARATOR">exitKey</code><code class="ANY">(</code><code class="ANY">ctx</code><code class="ANY">)</code><code class="ANY"> </code><code class="ANY">{</code><code class="ANY">}</code><code class="ANY">
+</code><code class="ANY">    </code><code class="FUNCTION_DECLARATOR">enterValue</code><code class="ANY">(</code><code class="ANY">ctx</code><code class="ANY">)</code><code class="ANY"> </code><code class="ANY">{</code><code class="ANY">}</code><code class="ANY">
+</code><code class="ANY">    </code><code class="FUNCTION_DECLARATOR">exitValue</code><code class="ANY">(</code><code class="ANY">ctx</code><code class="ANY">)</code><code class="ANY"> </code><code class="ANY">{</code><code class="ANY">}</code><code class="ANY">
+</code><code class="ANY">}</code><code class="ANY">
+</code><code class="ANY">
+</code><code class="KEYWORD">function</code><code class="ANY"> </code><code class="FUNCTION_DECLARATOR">myStrictFunction</code><code class="ANY">(</code><code class="ANY">)</code><code class="ANY"> </code><code class="ANY">{</code><code class="ANY">
+</code><code class="ANY">  </code><code class="COMMENT">// Function-level strict mode syntax</code><code class="ANY">
+</code><code class="ANY">  </code><code class="CHAR_STRING_LITERAL">'use strict'</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">  </code><code class="KEYWORD">function</code><code class="ANY"> </code><code class="FUNCTION_DECLARATOR">nested</code><code class="ANY">(</code><code class="ANY">)</code><code class="ANY"> </code><code class="ANY">{</code><code class="ANY">
+</code><code class="ANY">    </code><code class="KEYWORD">return</code><code class="ANY"> </code><code class="CHAR_STRING_LITERAL">'And so am I!'</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">  </code><code class="ANY">}</code><code class="ANY">
+</code><code class="ANY">  </code><code class="KEYWORD">return</code><code class="ANY"> </code><code class="CHAR_STRING_LITERAL">'test'</code><code class="ANY">;</code><code class="ANY">
+</code><code class="ANY">}</code><code class="ANY">
+</code>
+</pre>
+</html>

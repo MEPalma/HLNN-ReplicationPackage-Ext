@@ -1,18 +1,21 @@
 package highlighter.javaScriptHighlighter
 
-import Java8Lexer
+import JavaScriptLexer
+import JavaScriptParser
 import JavaScriptParser.ArgumentsExpressionContext
+import JavaScriptParser.NewExpressionContext
 import JavaScriptParserBaseListener
 import common.HCode
 import common.OHighlight
 import common.OHighlight.Companion.overrideOf
 import highlighter.GrammaticalHighlighter
+import isProduction
+import isTerminal
 import loopingOnChildren
 import org.antlr.v4.runtime.ParserRuleContext
+import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.TerminalNode
 import java.util.*
-import org.antlr.v4.runtime.*;
-import utils.println
 
 class JavaScriptGrammaticalHighlighter : GrammaticalHighlighter, JavaScriptParserBaseListener() {
     private val oHighlights = hashMapOf<Int, OHighlight>()
@@ -54,30 +57,17 @@ class JavaScriptGrammaticalHighlighter : GrammaticalHighlighter, JavaScriptParse
             onAddedExit = true
         )
 
-    // +-----------------+
-    // |  DECLARATIONS  |
-    //+-----------------+
-
-//    override fun exitFunctionDeclaration(ctx: JavaScriptParser.FunctionDeclarationContext?) =
-//        ctx.myLoopingOnChildren(
-//            targetProductionIndex = JavaScriptParser.RULE_identifier,
-//            onProduction = {HCode.FUNCTION_DECLARATOR},
-//            onAddedExit = true
-//        )
-//
-    // highlight class name #WORKS
     override fun exitClassDeclaration(ctx: JavaScriptParser.ClassDeclarationContext?) {
         var isFunDeclaration = false
         ctx.myLoopingOnChildren(
-            onTerminal = { isFunDeclaration = true; null},
+            onTerminal = { isFunDeclaration = true; null },
             targetTerminalIndex = JavaScriptLexer.Function_,
-            onProduction = { if (isFunDeclaration) HCode.FUNCTION_DECLARATOR else HCode.CLASS_DECLARATOR},
+            onProduction = { if (isFunDeclaration) HCode.FUNCTION_DECLARATOR else HCode.CLASS_DECLARATOR },
             targetProductionIndex = JavaScriptParser.RULE_identifier,
             onAddedExit = true
         )
     }
 
-//    // highlight variable declarations #WORKS
     override fun exitVariableDeclaration(ctx: JavaScriptParser.VariableDeclarationContext?) =
         ctx.myLoopingOnChildren(
             targetProductionIndex = JavaScriptParser.RULE_assignable,
@@ -85,302 +75,99 @@ class JavaScriptGrammaticalHighlighter : GrammaticalHighlighter, JavaScriptParse
             onAddedExit = true
         )
 
-
-    // highlight method definitions #WORKS
     override fun exitMethodDefinition(ctx: JavaScriptParser.MethodDefinitionContext?) =
         ctx.myLoopingOnChildren(
             targetProductionIndex = JavaScriptParser.RULE_propertyName,
             onProduction = { HCode.FUNCTION_DECLARATOR }
         )
 
-
-
-//    override fun exitFunctionExpression(ctx: JavaScriptParser.FunctionExpressionContext?) {
-//        ctx.myLoopingOnChildren(
-//            targetProductionIndex = JavaScriptParser.RULE_identifier,
-//            onProduction = { HCode.FUNCTION_IDENTIFIER}
-//        )
-//    }
-//    override fun exitClassTail(ctx: JavaScriptParser.ClassTailContext?) {
-//        super.exitClassTail(ctx)
-//    }
-//
-////    override fun exitFunctionExpression(ctx: JavaScriptParser.FunctionExpressionContext?) {
-////        ctx.myLoopingOnChildren(
-////            targetProductionIndex = JavaScriptParser.RULE_identifier,
-////            onProduction = { HCode.FUNCTION_IDENTIFIER },
-////            targetTerminalIndex = JavaScriptLexer.Identifier,
-////            onTerminal = { HCode.FUNCTION_IDENTIFIER },
-////            onAddedExit = true
-////        )
-////    }
-//
-//    // function parameters
-//    override fun exitFormalParameterList(ctx: JavaScriptParser.FormalParameterListContext?) {
-//        ctx.myLoopingOnChildren(
-//            targetProductionIndex = JavaScriptParser.RULE_formalParameterArg,
-//            onProduction = { HCode.FIELD_IDENTIFIER }
-//        )
-//    }
-//
-//    override fun exitAliasName(ctx: JavaScriptParser.AliasNameContext?) {
-//        ctx.myLoopingOnChildren(
-//            targetProductionIndex = JavaScriptParser.RULE_identifier,
-//            onProduction = { HCode.CLASS_DECLARATOR },
-//            onAddedExit = true
-//        )
-//    }
-////    override fun exitImportStatement(ctx: JavaScriptParser.ImportStatementContext?) {
-////        super.exitImportStatement(ctx)
-////    }
-////
-////    override fun exitFunctionExpression(ctx: JavaScriptParser.FunctionExpressionContext?) {
-////        super.exitFunctionExpression(ctx)
-////    }
-////
-////    override fun exitExpressionSequence(ctx: JavaScriptParser.ExpressionSequenceContext?) {
-////        super.exitExpressionSequence(ctx)
-////    }
-////
-////    override fun exitExpressionStatement(ctx: JavaScriptParser.ExpressionStatementContext?) {
-////        super.exitExpressionStatement(ctx)
-////    }
-//
-//    //NewExpressionContext ex> const xy = new antlr4.InputStream(input);
-//    override fun exitMemberDotExpression(ctx: JavaScriptParser.MemberDotExpressionContext?) {
-////        super.exitMemberDotExpression(ctx)
-////        if (   ctx?.parent?.ruleContext  is JavaScriptParser.NewExpressionContext ||
-////            ctx?.parent?.ruleContext is JavaScriptParser.AssignmentExpressionContext ||
-////            ctx?.parent?.ruleContext is JavaScriptParser.ExpressionSequenceContext
-////            ) {
-////            return
-////        }
-//
-//        if (ctx?.parent?.ruleContext is JavaScriptParser.ArgumentsExpressionContext) {
-//            ctx.myLoopingOnChildren(
-//                targetProductionIndex = JavaScriptParser.RULE_identifierName,
-//                onProduction = { HCode.FUNCTION_IDENTIFIER },
-//                onTerminal = { HCode.TYPE_IDENTIFIER },
-//                targetTerminalIndex = JavaScriptParser.Identifier,
-//                onAddedExit = true
-//            )
-//        }
-////        if (ctx?.parent?.ruleContext?.equals(JavaScriptParser.ArgumentsExpressionContext) == true){
-////
-////        }
-//    }
-//
-//    override fun exitArgumentsExpression(ctx: ArgumentsExpressionContext?) {
-//        ctx.myLoopingOnChildren(
-//            targetProductionIndex = JavaScriptParser.RULE_identifierName,
-//            onProduction = { HCode.FUNCTION_IDENTIFIER },
-//            onTerminal = { HCode.TYPE_IDENTIFIER }
-//        )
-//    }
-//
-////    ctx.myLoopingOnChildren(
-////            targetProductionIndex = JavaScriptParser.RULE_identifier,
-////            onProduction = {HCode.FUNCTION_DECLARATOR}
-////        )
-//
-//    override fun exitClassExpression(ctx: JavaScriptParser.ClassExpressionContext?) {
-//        assignOnFirstIdentifier(ctx, HCode.CLASS_DECLARATOR)
-//    }
-//
-//    override fun exitClassElement(ctx: JavaScriptParser.ClassElementContext?) {
-//        assignOnFirstIdentifier(ctx, HCode.CLASS_DECLARATOR)
-//    }
-//
-//    override fun exitImportExpression(ctx: JavaScriptParser.ImportExpressionContext?) {
-//        assignOnFirstIdentifier(ctx, HCode.ANNOTATION_DECLARATOR)
-//    }
-//
-//    override fun enterImportExpression(ctx: JavaScriptParser.ImportExpressionContext?) {
-//        ctx.println()
-//        assignOnFirstIdentifier(ctx, HCode.ANNOTATION_DECLARATOR)
-//    }
-//
-////    override fun exitClassTail(ctx: JavaScriptParser.ClassTailContext?) {
-////        assignOnFirstIdentifier(ctx, HCode.CLASS_DECLARATOR)
-////    }
-//
-//
-//    // +-----------------------+
-//    // | VARIABLE DECLARATIONS |
-//    // +-----------------------+
-//
-//    override fun exitVariableStatement(ctx: JavaScriptParser.VariableStatementContext?) =
-//        assignOnFirstIdentifier(ctx, HCode.VARIABLE_DECLARATOR)
-
-//    override fun exitVariableDeclarationList(ctx: JavaScriptParser.VariableDeclarationListContext?) =
-//        assignOnFirstIdentifier(ctx, HCode.VARIABLE_DECLARATOR)
-
-
-    // +----------+
-    // |  TYPES  |
-    //+----------+
-//    override fun exitNumericLiteral(ctx: JavaScriptParser.NumericLiteralContext?) =
-//        assignOnFirstIdentifier(ctx, HCode.TYPE_IDENTIFIER)
-//
-//    override fun exitBigintLiteral(ctx: JavaScriptParser.BigintLiteralContext?) =
-//        assignOnFirstIdentifier(ctx, HCode.TYPE_IDENTIFIER)
-//
-//    override fun exitLiteral(ctx: JavaScriptParser.LiteralContext?) =
-//        assignOnFirstIdentifier(ctx, HCode.TYPE_IDENTIFIER)
-//
-//    override fun exitAssignmentOperator(ctx: JavaScriptParser.AssignmentOperatorContext?) =
-//        assignOnFirstIdentifier(ctx, HCode.TYPE_IDENTIFIER)
-//
-//
-//    // test
-//    override fun exitIdentifierExpression(ctx: JavaScriptParser.IdentifierExpressionContext?) {
-//        super.exitIdentifierExpression(ctx)
-//    }
-//    override fun exitAssignmentOperatorExpression(ctx: JavaScriptParser.AssignmentOperatorExpressionContext?) {
-//        super.exitAssignmentOperatorExpression(ctx)
-//    }
-
-    override fun exitAssignable(ctx: JavaScriptParser.AssignableContext?) {
-        super.exitAssignable(ctx)
-    }
-
-    override fun exitDeclaration(ctx: JavaScriptParser.DeclarationContext?) {
-        super.exitDeclaration(ctx)
-    }
-
-    override fun exitLiteralExpression(ctx: JavaScriptParser.LiteralExpressionContext?) {
-        super.exitLiteralExpression(ctx)
-    }
-
-    override fun exitObjectLiteral(ctx: JavaScriptParser.ObjectLiteralContext?) {
-        super.exitObjectLiteral(ctx)
+    override fun exitFunctionDeclaration(ctx: JavaScriptParser.FunctionDeclarationContext?) {
+        ctx.myLoopingOnChildren(
+            targetProductionIndex = JavaScriptParser.RULE_identifier,
+            onProduction = { HCode.FUNCTION_DECLARATOR }
+        )
     }
 
 
-    //exitIdentifierExpression
+    // Highlight super classes
+    override fun exitClassTail(ctx: JavaScriptParser.ClassTailContext?) {
+        ctx.myLoopingOnChildren(
+            targetProductionIndex = JavaScriptParser.RULE_singleExpression,
+            onProduction = { HCode.TYPE_IDENTIFIER }
+        )
+    }
 
-//
-//    // Creation calls (Constuctor calls).
-//    override fun exitClassInstanceCreationExpression(ctx: JavaScriptParser.ClassInstanceCreationExpressionContext?) =
-//        ctx.myLoopingOnChildren(
-//            targetTerminalIndex = Java8Lexer.Identifier,
-//            onTerminal = { HCode.TYPE_IDENTIFIER },
-//            onAddedExit = false
-//        )
-//
-//    override fun exitClassInstanceCreationExpression_lf_primary(ctx: JavaScriptParser.ClassInstanceCreationExpression_lf_primaryContext?) =
-//        assignOnFirstIdentifier(ctx, HCode.TYPE_IDENTIFIER)
-//
-//
-//    override fun exitClassInstanceCreationExpression_lfno_primary(ctx: JavaScriptParser.ClassInstanceCreationExpression_lfno_primaryContext?) =
-//        ctx.myLoopingOnChildren(
-//            targetTerminalIndex = Java8Lexer.Identifier,
-//            onTerminal = { HCode.TYPE_IDENTIFIER },
-//            onAddedExit = false
-//        )
-//
-//    // +-------------+
-//    // |  FUNCTIONS  |
-//    //+--------------+
-//    override fun exitMethodInvocation(ctx: JavaScriptParser.MethodInvocationContext?) =
-//        ctx.myLoopingOnChildren(
-//            targetProductionIndex = JavaScriptParser.RULE_methodName,
-//            onProduction = { HCode.FUNCTION_IDENTIFIER },
-//            targetTerminalIndex = Java8Lexer.Identifier,
-//            onTerminal = { HCode.FUNCTION_IDENTIFIER },
-//            onAddedExit = true
-//        )
-//
-//    override fun exitMethodInvocation_lf_primary(ctx: JavaScriptParser.MethodInvocation_lf_primaryContext?) =
-//        ctx.myLoopingOnChildren(
-//            targetTerminalIndex = Java8Lexer.Identifier,
-//            onTerminal = { HCode.FUNCTION_IDENTIFIER }
-//        )
-//
-//    override fun exitMethodInvocation_lfno_primary(ctx: JavaScriptParser.MethodInvocation_lfno_primaryContext?) =
-//        ctx.myLoopingOnChildren(
-//            targetProductionIndex = JavaScriptParser.RULE_methodName,
-//            onProduction = { HCode.FUNCTION_IDENTIFIER },
-//            targetTerminalIndex = Java8Lexer.Identifier,
-//            onTerminal = { HCode.FUNCTION_IDENTIFIER },
-//            onAddedExit = true
-//        )
-//
-//    // +----------+
-//    // |  FIELDS  |
-//    //+-----------+
-//
-//    // Field Access (Known).
-//    override fun exitFieldAccess(ctx: JavaScriptParser.FieldAccessContext?) =
-//        assignOnFirstIdentifier(ctx, HCode.FIELD_IDENTIFIER)
-//
-//    override fun exitFieldAccess_lf_primary(ctx: JavaScriptParser.FieldAccess_lf_primaryContext?) =
-//        assignOnFirstIdentifier(ctx, HCode.FIELD_IDENTIFIER)
-//
-//    override fun exitFieldAccess_lfno_primary(ctx: JavaScriptParser.FieldAccess_lfno_primaryContext?) =
-//        assignOnFirstIdentifier(ctx, HCode.FIELD_IDENTIFIER)
-//
-//    // Expression Name (navigates to type of field, invoked always in this context).
-//    override fun exitExpressionName(ctx: JavaScriptParser.ExpressionNameContext?) {
-//        val accessSeq = Stack<TerminalNode>()
-//        Stack<ParserRuleContext>().let { fringe ->
-//            fringe.push(ctx)
-//            while (!fringe.isEmpty()) {
-//                fringe.pop().myLoopingOnChildren(
-//                    targetTerminalIndex = Java8Lexer.Identifier,
-//                    onTerminal = { accessSeq.push(it); null },
-//                    targetProductionIndex = JavaScriptParser.RULE_ambiguousName,
-//                    onProduction = { fringe.push(it); null },
-//                    reversed = true
-//                )
-//            }
-//        }
-//        accessSeq.removeLastOrNull()
-//        accessSeq.forEach {
-//            overrideOf(
-//                it,
-//                HCode.FIELD_IDENTIFIER,
-//                JavaScriptParser.RULE_expressionName,
-//                JavaScriptParser.ruleNames
-//            ).addReplacing()
-//        }
-//    }
-//
-//    override fun exitNormalAnnotation(ctx: JavaScriptParser.NormalAnnotationContext?) =
-//        ctx.myLoopingOnChildren(
-//            targetTerminalIndex = Java8Lexer.AT,
-//            onTerminal = { HCode.ANNOTATION_DECLARATOR },
-//            onAddedExit = true
-//        )
-//
-//    override fun exitMarkerAnnotation(ctx: JavaScriptParser.MarkerAnnotationContext?) =
-//        ctx.myLoopingOnChildren(
-//            targetTerminalIndex = Java8Lexer.AT,
-//            onTerminal = { HCode.ANNOTATION_DECLARATOR },
-//            onAddedExit = true
-//        )
-//
-//    override fun exitSingleElementAnnotation(ctx: JavaScriptParser.SingleElementAnnotationContext?) =
-//        ctx.myLoopingOnChildren(
-//            targetTerminalIndex = Java8Lexer.AT,
-//            onTerminal = { HCode.ANNOTATION_DECLARATOR },
-//            onAddedExit = true
-//        )
-//
-//    // Note this is possible thanks to reduced complexity in grammar.
-//    // Otherwise: match typeName, discriminate on parent's ruleIndex.
-//    override fun exitAnnotationTypeName(ctx: JavaScriptParser.AnnotationTypeNameContext?) =
-//        Stack<ParserRuleContext>().let { fringe ->
-//            fringe.push(ctx)
-//            while (!fringe.isEmpty()) {
-//                fringe.pop().myLoopingOnChildren(
-//                    targetTerminalIndex = Java8Lexer.Identifier,
-//                    onTerminal = { HCode.ANNOTATION_DECLARATOR },
-//                    targetProductionIndex = JavaScriptParser.RULE_ambiguousName,
-//                    onProduction = { fringe.push(it); null },
-//                    reversed = true
-//                )
-//            }
-//        }
+    // Highlight property names
+    override fun exitPropertyExpressionAssignment(ctx: JavaScriptParser.PropertyExpressionAssignmentContext?) {
+        ctx.myLoopingOnChildren(
+            targetProductionIndex = JavaScriptParser.RULE_propertyName,
+            onProduction = { HCode.FIELD_IDENTIFIER }
+        )
+    }
+
+    override fun exitMemberDotExpression(ctx: JavaScriptParser.MemberDotExpressionContext?) {
+        val methodInvocationParents = listOf(ArgumentsExpressionContext::class, NewExpressionContext::class)
+        if (methodInvocationParents.any { it.isInstance(ctx?.parent?.ruleContext) }) {
+            // method invocation after DOT call
+            var isNewExpression = ctx?.parent?.ruleContext is NewExpressionContext
+            ctx.myLoopingOnChildren(
+                targetProductionIndex = JavaScriptParser.RULE_identifierName,
+                onProduction = { if (isNewExpression) HCode.TYPE_IDENTIFIER else HCode.FUNCTION_IDENTIFIER },
+                onTerminal = { HCode.TYPE_IDENTIFIER },
+                targetTerminalIndex = JavaScriptParser.Identifier,
+                onAddedExit = true
+            )
+        } else if (ctx?.parent?.ruleContext !is JavaScriptParser.ImportExpressionContext) {
+            // Field accessor after DOT call
+            ctx.myLoopingOnChildren(
+                targetProductionIndex = JavaScriptParser.RULE_identifierName,
+                onProduction = { HCode.FIELD_IDENTIFIER }
+            )
+        }
+    }
+
+    override fun exitArgumentsExpression(ctx: ArgumentsExpressionContext?) {
+        ctx?.children?.forEach { pt ->
+            if (pt is JavaScriptParser.IdentifierExpressionContext) {
+                pt.children.getOrNull(0)?.isProduction(JavaScriptParser.RULE_identifier)?.let { typeTree ->
+                    typeTree.allSubNAMEStoUnit {
+                        overrideOf(
+                            it,
+                            HCode.FUNCTION_IDENTIFIER,
+                            JavaScriptParser.RULE_identifier,
+                            JavaScriptParser.ruleNames
+                        ).addReplacing()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun ParseTree.allSubNAMEStoUnit(action: (TerminalNode) -> Unit) {
+        val fringe = Stack<ParseTree>()
+        fringe.push(this)
+        while (!fringe.isEmpty()) {
+            val pt = fringe.pop()
+            pt.isTerminal(JavaScriptLexer.Identifier)?.let { action(it) } ?: pt.isProduction()
+                ?.let { p -> p.children.forEach { fringe.push(it) } }
+        }
+    }
+
+    override fun exitNewExpression(ctx: NewExpressionContext?) {
+        ctx?.children?.forEach { pt ->
+            if (pt is JavaScriptParser.IdentifierExpressionContext) {
+                pt.children.getOrNull(0)?.isProduction(JavaScriptParser.RULE_identifier)?.let { typeTree ->
+                    typeTree.allSubNAMEStoUnit {
+                        overrideOf(
+                            it,
+                            HCode.TYPE_IDENTIFIER,
+                            JavaScriptParser.RULE_identifier,
+                            JavaScriptParser.ruleNames
+                        ).addReplacing()
+                    }
+                }
+            }
+        }
+    }
 
 }
