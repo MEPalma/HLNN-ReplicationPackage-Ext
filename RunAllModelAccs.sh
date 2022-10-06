@@ -7,8 +7,12 @@ do
     fnamenoext="${fname%.*}"
 
     echo "$fnamenoext"
+        if [[ $fname == javascript* ]];
+            then
+            ./gradlew JavaScriptEvaluator -Pargs="perFileTimeModel ../saved_model_losses/$fname false"
+            echo "$fname"
 
-        if [[ $fname == java* ]];
+        elif [[ $fname == java* ]];
             then
             ./gradlew JavaEvaluator -Pargs="perFileAcc ../saved_model_losses/$fname"
             echo "$fname"
