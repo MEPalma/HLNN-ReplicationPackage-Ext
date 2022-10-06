@@ -464,7 +464,6 @@ abstract class Evaluator(
                 lexerChannels = lexerChannels,
                 withErrorListeners = false
             )?.let { etas ->
-                println(etas)
                 val hetas = etas.highlightedAs { lexicalHighlighter(it) }
                 startRule?.let {
                     grammaticalHighlighter.reset() // Redundant.

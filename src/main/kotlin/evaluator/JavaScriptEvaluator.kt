@@ -21,8 +21,4 @@ class JavaScriptEvaluator(
 )
 
 fun main(args: Array<String>) =
-    JavaScriptEvaluator(arrayOf("fileToHTMLBrute", "testFiles/test.js")).run()
-//    JavaScriptEvaluator(arrayOf("renderTree","testFiles/test.js")).run()
-
-//renderTree
-//    JavaScriptEvaluator(args).run()
+    JavaScriptEvaluator(args).run()

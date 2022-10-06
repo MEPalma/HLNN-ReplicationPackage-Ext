@@ -21,5 +21,4 @@ class JavaPreprocessor(userArgs: Array<String>) : Preprocessor(
 )
 
 fun main(args: Array<String>) =
-    JavaPreprocessor(arrayOf("debug", "test.java")).run()
-//    JavaPreprocessor(args).run()
+    JavaPreprocessor(args).run()

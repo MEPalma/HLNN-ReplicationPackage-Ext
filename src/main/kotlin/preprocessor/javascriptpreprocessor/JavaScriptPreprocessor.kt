@@ -21,5 +21,4 @@ class JavaScriptPreprocessor(userArgs: Array<String>) : Preprocessor(
 )
 
 fun main(args: Array<String>) =
-    JavaScriptPreprocessor(arrayOf("debug", "test.js")).run()
-//    JavaPreprocessor(args).run()
+    JavaScriptPreprocessor(args).run()

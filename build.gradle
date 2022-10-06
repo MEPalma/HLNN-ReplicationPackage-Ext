@@ -17,8 +17,6 @@ dependencies {
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1-native-mt'
     implementation 'junit:junit:4.13.1'
-    implementation 'io.mockk:mockk:1.12.8'
-    testImplementation 'io.mockk:mockk:1.12.8'
 
     // https://mvnrepository.com/artifact/org.antlr/antlr4
     antlr 'org.antlr:antlr4:4.9.2'
