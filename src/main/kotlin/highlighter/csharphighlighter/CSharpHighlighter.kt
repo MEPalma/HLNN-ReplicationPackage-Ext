@@ -1,6 +1,7 @@
 package highlighter.csharphighlighter
 
 import CSharpLexer
+import CSharpParser
 import common.ETA
 import common.HCode.*
 import common.HCode.Companion.hetaOf
@@ -85,6 +86,7 @@ fun csharpLexicalHighlighter(eta: ETA): HETA =
             CSharpLexer.VOLATILE,
             CSharpLexer.WHILE
         ) -> hetaOf(eta, KEYWORD)
+
         in hashSetOf(
             CSharpLexer.LITERAL_ACCESS,
             CSharpLexer.INTEGER_LITERAL,
@@ -95,6 +97,7 @@ fun csharpLexicalHighlighter(eta: ETA): HETA =
             CSharpLexer.TRUE,
             CSharpLexer.FALSE,
         ) -> hetaOf(eta, LITERAL)
+
         in hashSetOf(
             CSharpLexer.CHARACTER_LITERAL,
             CSharpLexer.REGULAR_STRING,
@@ -102,6 +105,7 @@ fun csharpLexicalHighlighter(eta: ETA): HETA =
             CSharpLexer.INTERPOLATED_REGULAR_STRING_START,
             CSharpLexer.INTERPOLATED_VERBATIUM_STRING_START
         ) -> hetaOf(eta, CHAR_STRING_LITERAL)
+
         in hashSetOf(
             CSharpLexer.SINGLE_LINE_DOC_COMMENT,
             CSharpLexer.EMPTY_DELIMITED_DOC_COMMENT,
@@ -109,5 +113,47 @@ fun csharpLexicalHighlighter(eta: ETA): HETA =
             CSharpLexer.SINGLE_LINE_COMMENT,
             CSharpLexer.DELIMITED_COMMENT,
         ) -> hetaOf(eta, COMMENT)
+
         else -> hetaOf(eta, ANY)
+    }
+
+fun csharpSemiLexicalHighlighter(eta: ETA): HETA =
+    csharpLexicalHighlighter(eta).let { heta ->
+        when (heta.eta.tokenRule) {
+            in hashSetOf(
+                CSharpLexer.ADD,
+                CSharpLexer.ALIAS,
+                CSharpLexer.ARGLIST,
+                CSharpLexer.ASCENDING,
+                CSharpLexer.ASYNC,
+                CSharpLexer.AWAIT,
+                CSharpLexer.BY,
+                CSharpLexer.DESCENDING,
+                CSharpLexer.DYNAMIC,
+                CSharpLexer.EQUALS,
+                CSharpLexer.FROM,
+                CSharpLexer.GET,
+                CSharpLexer.GROUP,
+                CSharpLexer.INTO,
+                CSharpLexer.JOIN,
+                CSharpLexer.LET,
+                CSharpLexer.NAMEOF,
+                CSharpLexer.ON,
+                CSharpLexer.ORDERBY,
+                CSharpLexer.PARTIAL,
+                CSharpLexer.REMOVE,
+                CSharpLexer.SELECT,
+                CSharpLexer.SET,
+                CSharpLexer.UNMANAGED,
+                CSharpLexer.VAR,
+                CSharpLexer.WHEN,
+                CSharpLexer.WHERE,
+                CSharpLexer.YIELD
+            ) -> when (heta.eta.parentRule) {
+                CSharpParser.RULE_identifier -> heta
+                else -> hetaOf(heta.eta, KEYWORD)
+            }
+            //
+            else -> heta
+        }
     }
