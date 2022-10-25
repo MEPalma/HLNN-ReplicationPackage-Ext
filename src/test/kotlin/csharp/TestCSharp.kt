@@ -2,7 +2,6 @@ package csharp
 
 import common.HETAMarshaller.Companion.toJSON
 import common.JSONSourceMarshaller.Companion.toJSONString
-import common.JSONSourceMarshaller.Companion.tryHETASFromJSON
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import preprocessor.python3preprocessor.CSharpPreprocessor

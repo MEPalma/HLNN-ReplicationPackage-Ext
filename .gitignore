@@ -13,6 +13,9 @@ __pycache__/
 
 out.html
 
+src/main/gen/
+*.tokens
+
 
 raw/
 oracle/
