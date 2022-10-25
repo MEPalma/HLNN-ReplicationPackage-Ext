@@ -21,6 +21,6 @@ class CSharpEvaluator(
 )
 
 fun main(args: Array<String>) =
-//    CSharpEvaluator((arrayOf("renderTree"))).run()
-    CSharpEvaluator(arrayOf("fileToHTMLBrute", "src/test/kotlin/csharp/files/AllInOneNoPreprocessor.cs")).run()
+    CSharpEvaluator((arrayOf("renderTree"))).run()
+//    CSharpEvaluator(arrayOf("fileToHTMLBrute", "src/test/kotlin/csharp/files/AllInOneNoPreprocessor.cs")).run()
 //    CSharpEvaluator(arrayOf("fileToHTMLBrute", "test.cs")).run()

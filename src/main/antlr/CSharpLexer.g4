@@ -4,17 +4,17 @@
 
 lexer grammar CSharpLexer;
 
-channels { COMMENTS_CHANNEL, DIRECTIVE }
+channels { DIRECTIVE }
 
 options { superClass = CSharpLexerBase; }
 
 BYTE_ORDER_MARK: '\u00EF\u00BB\u00BF';
 
-SINGLE_LINE_DOC_COMMENT: '///' InputCharacter*    -> channel(COMMENTS_CHANNEL);
-EMPTY_DELIMITED_DOC_COMMENT: '/***/'              -> channel(COMMENTS_CHANNEL);
-DELIMITED_DOC_COMMENT:       '/**' ~'/' .*? '*/'  -> channel(COMMENTS_CHANNEL);
-SINGLE_LINE_COMMENT:     '//'  InputCharacter*    -> channel(COMMENTS_CHANNEL);
-DELIMITED_COMMENT:       '/*'  .*? '*/'           -> channel(COMMENTS_CHANNEL);
+SINGLE_LINE_DOC_COMMENT: '///' InputCharacter*    -> channel(HIDDEN);
+EMPTY_DELIMITED_DOC_COMMENT: '/***/'              -> channel(HIDDEN);
+DELIMITED_DOC_COMMENT:       '/**' ~'/' .*? '*/'  -> channel(HIDDEN);
+SINGLE_LINE_COMMENT:     '//'  InputCharacter*    -> channel(HIDDEN);
+DELIMITED_COMMENT:       '/*'  .*? '*/'           -> channel(HIDDEN);
 WHITESPACES:   (Whitespace | NewLine)+            -> channel(HIDDEN);
 SHARP:         '#'                                -> mode(DIRECTIVE_MODE), skip;
 
@@ -239,7 +239,7 @@ DIRECTIVE_OP_AND:              '&&'                             -> channel(DIREC
 DIRECTIVE_OP_OR:               '||'                             -> channel(DIRECTIVE), type(OP_OR);
 DIRECTIVE_STRING:              '"' ~('"' | [\r\n\u0085\u2028\u2029])* '"' -> channel(DIRECTIVE), type(STRING);
 CONDITIONAL_SYMBOL:            IdentifierOrKeyword              -> channel(DIRECTIVE);
-DIRECTIVE_SINGLE_LINE_COMMENT: '//' ~[\r\n\u0085\u2028\u2029]*  -> channel(COMMENTS_CHANNEL), type(SINGLE_LINE_COMMENT);
+DIRECTIVE_SINGLE_LINE_COMMENT: '//' ~[\r\n\u0085\u2028\u2029]*  -> channel(HIDDEN), type(SINGLE_LINE_COMMENT);
 DIRECTIVE_NEW_LINE:            NewLine                          -> channel(DIRECTIVE), mode(DEFAULT_MODE);
 
 mode DIRECTIVE_TEXT;

@@ -99,11 +99,18 @@ fun csharpLexicalHighlighter(eta: ETA): HETA =
         ) -> hetaOf(eta, LITERAL)
 
         in hashSetOf(
+            CSharpLexer.STRING,
             CSharpLexer.CHARACTER_LITERAL,
             CSharpLexer.REGULAR_STRING,
+            CSharpLexer.REGULAR_STRING_INSIDE,
             CSharpLexer.VERBATIUM_STRING,
+            CSharpLexer.VERBATIUM_INSIDE_STRING,
+            CSharpLexer.INTERPOLATION_STRING,
             CSharpLexer.INTERPOLATED_REGULAR_STRING_START,
-            CSharpLexer.INTERPOLATED_VERBATIUM_STRING_START
+            CSharpLexer.INTERPOLATED_VERBATIUM_STRING_START,
+            CSharpLexer.DOUBLE_QUOTE_INSIDE,
+            CSharpLexer.REGULAR_CHAR_INSIDE,
+            CSharpLexer.REGULAR_STRING_INSIDE,
         ) -> hetaOf(eta, CHAR_STRING_LITERAL)
 
         in hashSetOf(

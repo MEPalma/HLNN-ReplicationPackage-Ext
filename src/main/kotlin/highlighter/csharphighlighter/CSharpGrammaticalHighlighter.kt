@@ -10,7 +10,9 @@ import isProduction
 import isTerminal
 import loopingOnChildren
 import org.antlr.v4.runtime.ParserRuleContext
+import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.TerminalNode
+import java.util.*
 
 class CSharpGrammaticalHighlighter : GrammaticalHighlighter, CSharpParserBaseListener() {
     private val oHighlights = hashMapOf<Int, OHighlight>()
@@ -63,6 +65,14 @@ class CSharpGrammaticalHighlighter : GrammaticalHighlighter, CSharpParserBaseLis
             targetProductionIndex = CSharpParser.RULE_identifier,
             onProduction = { HCode.VARIABLE_DECLARATOR },
             onAddedExit = true,
+        )
+    }
+
+    override fun exitVariable_declarator(ctx: CSharpParser.Variable_declaratorContext?) {
+        ctx.thisLoopingOnChildren(
+            targetProductionIndex = CSharpParser.RULE_identifier,
+            onProduction = { HCode.VARIABLE_DECLARATOR },
+            onAddedExit = true
         )
     }
 
@@ -122,6 +132,14 @@ class CSharpGrammaticalHighlighter : GrammaticalHighlighter, CSharpParserBaseLis
         )
     }
 
+    override fun exitNamespace_declaration(ctx: CSharpParser.Namespace_declarationContext?) {
+        ctx?.qualified_identifier().thisLoopingOnChildren(
+            targetProductionIndex = CSharpParser.RULE_identifier,
+            onProduction = { HCode.CLASS_DECLARATOR },
+            onAddedExit = false,
+        )
+    }
+
     override fun exitDelegate_definition(ctx: CSharpParser.Delegate_definitionContext?) {
         ctx?.thisLoopingOnChildren(
             targetProductionIndex = CSharpParser.RULE_identifier,
@@ -130,16 +148,28 @@ class CSharpGrammaticalHighlighter : GrammaticalHighlighter, CSharpParserBaseLis
         )
     }
 
+    override fun exitLocal_function_header(ctx: CSharpParser.Local_function_headerContext?) {
+        ctx?.identifier()?.let { identifier ->
+            overrideOf(
+                prc = identifier,
+                hCode = HCode.FUNCTION_DECLARATOR,
+                overridingRuleIndex = CSharpParser.RULE_local_function_header
+            ).addReplacing()
+        }
+    }
+
     override fun exitEvent_declaration(ctx: CSharpParser.Event_declarationContext?) {
         // TODO
     }
 
     override fun exitConstructor_declaration(ctx: CSharpParser.Constructor_declarationContext?) {
-        ctx?.thisLoopingOnChildren(
-            targetProductionIndex = CSharpParser.RULE_identifier,
-            onProduction = { HCode.FUNCTION_DECLARATOR },
-            onAddedExit = true,
-        )
+        ctx?.identifier()?.let { identifier ->
+            overrideOf(
+                prc = identifier,
+                hCode = HCode.FUNCTION_DECLARATOR,
+                overridingRuleIndex = CSharpParser.RULE_local_function_header
+            ).addReplacing()
+        }
     }
 
     override fun exitDestructor_definition(ctx: CSharpParser.Destructor_definitionContext?) {
@@ -168,7 +198,11 @@ class CSharpGrammaticalHighlighter : GrammaticalHighlighter, CSharpParserBaseLis
             onProduction = { HCode.TYPE_IDENTIFIER },
             onAddedExit = false,
         )
-        // TODO: qualified_alias_member
+        ctx?.qualified_alias_member()?.thisLoopingOnChildren(
+            targetProductionIndex = CSharpParser.RULE_identifier,
+            onProduction = { HCode.TYPE_IDENTIFIER },
+            onAddedExit = false,
+        )
     }
 
     override fun exitVariant_type_parameter(ctx: CSharpParser.Variant_type_parameterContext?) {
@@ -187,16 +221,104 @@ class CSharpGrammaticalHighlighter : GrammaticalHighlighter, CSharpParserBaseLis
         )
     }
 
+    override fun exitType_parameter_constraints_clause(ctx: CSharpParser.Type_parameter_constraints_clauseContext?) {
+        ctx?.identifier()?.let { identifier ->
+            overrideOf(
+                prc = identifier,
+                hCode = HCode.TYPE_IDENTIFIER,
+                overridingRuleIndex = CSharpParser.RULE_type_parameter_constraints_clause
+            ).addReplacing()
+        }
+    }
+
+    override fun exitUsingAliasDirective(ctx: CSharpParser.UsingAliasDirectiveContext?) {
+        ctx?.identifier()?.let { identifier ->
+            overrideOf(
+                prc = identifier,
+                hCode = HCode.TYPE_IDENTIFIER,
+                overridingRuleIndex = CSharpParser.RULE_using_directive
+            ).addReplacing()
+        }
+    }
+
+    override fun exitLabeled_Statement(ctx: CSharpParser.Labeled_StatementContext?) {
+        ctx?.identifier()?.let { identifier ->
+            overrideOf(
+                prc = identifier,
+                hCode = HCode.FUNCTION_DECLARATOR,
+                overridingRuleIndex = CSharpParser.RULE_labeled_Statement
+            ).addReplacing()
+        }
+    }
+
     // Creation calls (Constructor calls).
 
     // +---------------+
     // |   FUNCTIONS   |
     // +---------------+
+    override fun exitPrimary_expression(ctx: CSharpParser.Primary_expressionContext?) {
+        val fringe = Stack<ParseTree>()
+        ctx?.children?.forEach { c ->
+            c.isProduction(CSharpParser.RULE_method_invocation)?.let { _ ->
+                if (fringe.isNotEmpty()) {
+                    // TODO: primary_expression_start:memberAccessExpression
+                    val last = fringe.peek()
+                    last.isProduction(
+                        setOf(
+                            CSharpParser.RULE_member_access,
+                            CSharpParser.RULE_qualified_alias_member,
+                            CSharpParser.RULE_primary_expression_start
+                        )
+                    )
+                        ?.let { methodCallSubj ->
+                            methodCallSubj.thisLoopingOnChildren(
+                                targetProductionIndex = CSharpParser.RULE_identifier,
+                                onProduction = { HCode.FUNCTION_IDENTIFIER },
+                                onAddedExit = false,
+                            )
+                        } ?: last?.isProduction(CSharpParser.RULE_identifier)?.let { idenCallSubj ->
+                        overrideOf(
+                            prc = idenCallSubj,
+                            hCode = HCode.FUNCTION_IDENTIFIER,
+                            overridingRuleIndex = CSharpParser.RULE_method_invocation
+                        ).addReplacing()
+                    }
+                }
+            }
+            c.isProduction(CSharpParser.RULE_primary_expression_start)?.let { exprStart ->
+                exprStart.children?.first()?.isProduction(CSharpParser.RULE_qualified_alias_member)?.children?.get(2)
+                    ?.isProduction(CSharpParser.RULE_identifier)?.let { iden ->
+                        fringe.add(iden)
+                    }
+            } ?: fringe.add(c)
+        }
+    }
 
     // +------------+
     // |   FIELDS   |
     // +------------+
+    override fun exitMember_access(ctx: CSharpParser.Member_accessContext?) {
+        ctx?.identifier()?.let { memberId ->
+            overrideOf(
+                prc = memberId,
+                hCode = HCode.FIELD_IDENTIFIER,
+                overridingRuleIndex = ctx.ruleIndex
+            ).addReplacing()
+        }
+    }
 
-    // Field Access (Known).
+    override fun exitQualified_alias_member(ctx: CSharpParser.Qualified_alias_memberContext?) {
+        ctx?.identifier(1)?.let { identifier ->
+            overrideOf(
+                prc = identifier,
+                hCode = HCode.FIELD_IDENTIFIER,
+                overridingRuleIndex = CSharpParser.RULE_qualified_alias_member
+            ).addReplacing()
+        }
+    }
+
+//    override fun exitMemberAccessExpression(ctx: CSharpParser.MemberAccessExpressionContext?) {
+//
+//    }
 
 }
