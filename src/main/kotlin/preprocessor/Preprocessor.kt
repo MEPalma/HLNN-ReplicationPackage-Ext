@@ -5,12 +5,9 @@ import common.*
 import common.JSONSourceMarshaller.Companion.toJSON
 import common.JSONSourceMarshaller.Companion.tryJSONHighlightedSourceFromJSON
 import common.JSONSourceMarshaller.Companion.tryJSONSourcesFromJSON
-import highlighter.GrammaticalHighlighter
-import highlighter.highlightedAs
+import highlighter.*
 import highlighter.javahighlighter.JavaGrammaticalHighlighter
 import highlighter.javahighlighter.javaLexicalHighlighter
-import highlighter.toHighlightedSource
-import highlighter.tryToETAS
 import org.antlr.v4.runtime.*
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import utils.println
@@ -118,6 +115,29 @@ abstract class Preprocessor(
         }
 
         jhetasCleanFile.appendText("]")
+    }
+
+    open fun tryToHetas(src: String): Array<HETA>? {
+        var startRule: RuleContext? = null
+        src.tryToETAS(
+            lexerOf = lexerOf,
+            parserOf = parserOf,
+            startRuleOf = { startRuleOf(it).let { sr -> startRule = sr; sr } },
+            resolver = ETAMarshaller::tryFromContext,
+        )?.let { etas ->
+            // Perform highlighting.
+            val hetas = etas.highlightedAs { javaLexicalHighlighter(it) }
+            startRule?.let {
+                grammaticalHighlighter.reset() // Reduntand.
+                val v = JavaGrammaticalHighlighter()
+                ParseTreeWalker.DEFAULT.walk(v, it)
+                OHighlight.applyOverrides(hetas, v.getOverrides())
+                grammaticalHighlighter.reset() // Reduntand.
+            } ?: error("No start rule definition.")
+            //
+            return hetas
+        }
+        return null
     }
 
     open fun debug(filterSources: (Array<JSONSource>) -> Array<JSONSource> = { it }) {

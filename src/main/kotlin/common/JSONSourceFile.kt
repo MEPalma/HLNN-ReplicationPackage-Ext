@@ -2,6 +2,7 @@ package common
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import common.JSONSourceMarshaller.Companion.tryJSONAnnotatedSourceFromJSON
 import org.apache.commons.codec.digest.DigestUtils
 import java.io.File
 
@@ -45,6 +46,20 @@ class JSONSourceMarshaller {
 
         fun Array<JSONSource>.toJSON(filepath: String) =
             File(filepath).writeText(jacksonObjectMapper.writeValueAsString(this))
+
+        fun Array<HETA>.toJSON(filepath: String) =
+            File(filepath).writeText(this.toJSONString())
+
+        fun Array<HETA>.toJSONString() =
+            jacksonObjectMapper.writeValueAsString(this)
+
+        fun String.tryHETASFromJSON(): Array<HETA>? =
+            try {
+                jacksonObjectMapper.readValue(this)
+            } catch (e: Exception) {
+                null
+            }
+
 
         fun String.tryJSONAnnotatedSourceFromJSON(): JSONAnnotatedSource? =
             try {
