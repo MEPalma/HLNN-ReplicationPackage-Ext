@@ -19,6 +19,7 @@ class TestCSharp {
     }
 
     private fun assertSnapshot(filename: String) {
+        if (!File(snapshotFilepathOf(filename)).exists()) snapshot(filename)
         val snapshotHetas: String = File(snapshotFilepathOf(filename)).readText()
         val hetas: String? =
             CSharpPreprocessor(arrayOf()).tryToHetas(File(filepathOf(filename)).readText())?.toJSONString()
@@ -27,8 +28,11 @@ class TestCSharp {
 
     @Test
     fun `test AllInOneNoPreprocessor_cs`() {
-        val filename = "AllInOneNoPreprocessor.cs";
-        if (!File(snapshotFilepathOf(filename)).exists()) snapshot(filename)
-        assertSnapshot(filename)
+        assertSnapshot("AllInOneNoPreprocessor.cs")
+    }
+
+    @Test
+    fun `test TypeInArglistMembAccessError_cs`() {
+        assertSnapshot("TypeInArglistMembAccessError.cs")
     }
 }

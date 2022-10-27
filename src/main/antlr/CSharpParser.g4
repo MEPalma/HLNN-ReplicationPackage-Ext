@@ -86,7 +86,14 @@ argument_list
 	;
 
 argument
-	: (identifier ':')? refout=(REF | OUT | IN)? (VAR | type_)? expression
+	: (identifier ':')? refout=(REF | OUT | IN)?
+
+	  // Patched:
+	  // avoid member accesses being parsed as type_ when followed by unary_expressions;
+	  // ensure 'expression' has precedence.
+	  ( expression
+	  | (VAR | type_) expression
+	  )
 	;
 
 expression
