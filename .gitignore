@@ -11,6 +11,12 @@ __pycache__/
 .project
 .settings/
 
+out.html
+
+src/main/gen/
+*.tokens
+
+
 raw/
 oracle/
 folds/

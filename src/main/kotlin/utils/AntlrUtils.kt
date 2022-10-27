@@ -4,6 +4,7 @@ import common.OHighlight.Companion.overrideOf
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.TerminalNode
+import java.util.*
 
 fun ParseTree?.isTerminal(): TerminalNode? =
     if (this != null && this is TerminalNode) this else null
@@ -63,5 +64,15 @@ fun ParserRuleContext?.loopingOnChildren(
                 addReplacingFunc(oh)
                 if (onAddedExit) return
             }
+    }
+}
+
+fun ParseTree.allSubsTo(ruleIndex: Int, action: (ParserRuleContext) -> Unit) {
+    val fringe = Stack<ParseTree>()
+    fringe.push(this)
+    while (!fringe.isEmpty()) {
+        val pt = fringe.pop()
+        pt.isProduction(ruleIndex)?.let { action(it) } ?: pt.isProduction()
+            ?.let { p -> p.children.forEach { fringe.push(it) } }
     }
 }
