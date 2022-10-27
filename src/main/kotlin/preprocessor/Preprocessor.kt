@@ -6,8 +6,6 @@ import common.JSONSourceMarshaller.Companion.toJSON
 import common.JSONSourceMarshaller.Companion.tryJSONHighlightedSourceFromJSON
 import common.JSONSourceMarshaller.Companion.tryJSONSourcesFromJSON
 import highlighter.*
-import highlighter.javahighlighter.JavaGrammaticalHighlighter
-import highlighter.javahighlighter.javaLexicalHighlighter
 import org.antlr.v4.runtime.*
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import utils.println
@@ -126,12 +124,11 @@ abstract class Preprocessor(
             resolver = ETAMarshaller::tryFromContext,
         )?.let { etas ->
             // Perform highlighting.
-            val hetas = etas.highlightedAs { javaLexicalHighlighter(it) }
+            val hetas = etas.highlightedAs { lexicalHighlighter(it) }
             startRule?.let {
                 grammaticalHighlighter.reset() // Reduntand.
-                val v = JavaGrammaticalHighlighter()
-                ParseTreeWalker.DEFAULT.walk(v, it)
-                OHighlight.applyOverrides(hetas, v.getOverrides())
+                ParseTreeWalker.DEFAULT.walk(grammaticalHighlighter, it)
+                OHighlight.applyOverrides(hetas, grammaticalHighlighter.getOverrides())
                 grammaticalHighlighter.reset() // Reduntand.
             } ?: error("No start rule definition.")
             //
@@ -168,12 +165,11 @@ abstract class Preprocessor(
                 // Save annotations to disk.
                 jetasFile.appendText(jeta.toJSON())
                 // Perform highlighting.
-                val hetas = jeta.etas.highlightedAs { javaLexicalHighlighter(it) }
+                val hetas = jeta.etas.highlightedAs { lexicalHighlighter(it) }
                 startRule?.let {
                     grammaticalHighlighter.reset() // Reduntand.
-                    val v = JavaGrammaticalHighlighter()
-                    ParseTreeWalker.DEFAULT.walk(v, it)
-                    OHighlight.applyOverrides(hetas, v.getOverrides())
+                    ParseTreeWalker.DEFAULT.walk(grammaticalHighlighter, it)
+                    OHighlight.applyOverrides(hetas, grammaticalHighlighter.getOverrides())
                     grammaticalHighlighter.reset() // Reduntand.
                 } ?: error("No start rule definition.")
                 //
@@ -208,14 +204,19 @@ abstract class Preprocessor(
         when (userArgs[0]) {
             "generateOracle" ->
                 generateOracle()
+
             "cleanOracle" ->
                 cleanOracle()
+
             "debug" ->
                 debug()
+
             "render" ->
                 render(userArgs[1])
+
             "renderAll" ->
                 renderAll(userArgs[1])
+
             else -> {
                 System.err.println("Unknown commands sequence $userArgs")
             }

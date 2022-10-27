@@ -1,13 +1,12 @@
 package highlighter.csharphighlighter
 
-import CSharpLexer
 import CSharpParser
 import CSharpParserBaseListener
+import allSubsTo
 import common.HCode
 import common.OHighlight
 import highlighter.GrammaticalHighlighter
 import isProduction
-import isTerminal
 import loopingOnChildren
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.ParseTree
@@ -159,7 +158,13 @@ class CSharpGrammaticalHighlighter : GrammaticalHighlighter, CSharpParserBaseLis
     }
 
     override fun exitEvent_declaration(ctx: CSharpParser.Event_declarationContext?) {
-        // TODO
+        ctx?.member_name()?.allSubsTo(CSharpParser.RULE_identifier) {
+            overrideOf(
+                prc = it,
+                hCode = HCode.CLASS_DECLARATOR,
+                overridingRuleIndex = CSharpParser.RULE_event_declaration,
+            ).addReplacing()
+        }
     }
 
     override fun exitConstructor_declaration(ctx: CSharpParser.Constructor_declarationContext?) {
@@ -261,7 +266,6 @@ class CSharpGrammaticalHighlighter : GrammaticalHighlighter, CSharpParserBaseLis
         ctx?.children?.forEach { c ->
             c.isProduction(CSharpParser.RULE_method_invocation)?.let { _ ->
                 if (fringe.isNotEmpty()) {
-                    // TODO: primary_expression_start:memberAccessExpression
                     val last = fringe.peek()
                     last.isProduction(
                         setOf(
