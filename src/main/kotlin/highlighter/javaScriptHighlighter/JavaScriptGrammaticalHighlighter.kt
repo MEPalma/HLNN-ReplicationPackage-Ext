@@ -101,7 +101,7 @@ class JavaScriptGrammaticalHighlighter : GrammaticalHighlighter, JavaScriptParse
     override fun exitPropertyExpressionAssignment(ctx: JavaScriptParser.PropertyExpressionAssignmentContext?) {
         ctx.myLoopingOnChildren(
             targetProductionIndex = JavaScriptParser.RULE_propertyName,
-            onProduction = { HCode.FIELD_IDENTIFIER }
+            onProduction = { HCode.FIELD_IDENTIFIER } // ToDo: chage to Varable_DECLARATONsss
         )
     }
 
