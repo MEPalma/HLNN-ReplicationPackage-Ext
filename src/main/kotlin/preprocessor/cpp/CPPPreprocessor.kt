@@ -10,7 +10,7 @@ import utils.toResourcePath
 class CPPPreprocessor(userArgs: Array<String>) : Preprocessor(
     userArgs = userArgs,
     //
-    oracleFileSourcesPath = "cpp".toResourcePath(),
+    oracleFileSourcesPath = "/cpp".toResourcePath(),
     //
     lexerOf = { CPP14Lexer(it) },
     parserOf = { CPP14Parser(it) },

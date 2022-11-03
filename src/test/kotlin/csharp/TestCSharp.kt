@@ -4,7 +4,8 @@ import common.JSONSourceMarshaller.Companion.toJSONString
 import common.SnapshotTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import preprocessor.python3preprocessor.CSharpPreprocessor
+import preprocessor.Preprocessor
+import preprocessor.csharppreprocessor.CSharpPreprocessor
 import java.io.File
 
 class TestCSharp : SnapshotTest {
@@ -15,7 +16,7 @@ class TestCSharp : SnapshotTest {
         if (!File(snapshotFilepathOf(language, filename)).exists()) snapshot(language, filename)
         val snapshotHetas: String = File(snapshotFilepathOf(language, filename)).readText()
         val hetas: String? =
-            CSharpPreprocessor(arrayOf()).tryToHetas(File(filepathOf(language, filename)).readText())?.toJSONString()
+            preprocessor.tryToHetas(File(filepathOf(language, filename)).readText())?.toJSONString()
         assertEquals(snapshotHetas, hetas)
     }
 
@@ -28,4 +29,7 @@ class TestCSharp : SnapshotTest {
     fun `test TypeInArglistMembAccessError_cs`() {
         assertSnapshot("TypeInArglistMembAccessError.cs")
     }
+
+    override val preprocessor: Preprocessor
+        get() = CSharpPreprocessor(arrayOf())
 }

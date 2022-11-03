@@ -1,4 +1,4 @@
-package preprocessor.python3preprocessor
+package preprocessor.csharppreprocessor
 
 import CSharpLexer
 import CSharpParser
@@ -10,7 +10,7 @@ import utils.toResourcePath
 class CSharpPreprocessor(userArgs: Array<String>) : Preprocessor(
     userArgs = userArgs,
     //
-    oracleFileSourcesPath = "/python3".toResourcePath(),
+    oracleFileSourcesPath = "/csharp".toResourcePath(),
     //
     lexerOf = { CSharpLexer(it) },
     parserOf = { CSharpParser(it) },
@@ -21,4 +21,4 @@ class CSharpPreprocessor(userArgs: Array<String>) : Preprocessor(
 )
 
 fun main(args: Array<String>) =
-    Python3Preprocessor(args).run()
+    CSharpPreprocessor(args).run()

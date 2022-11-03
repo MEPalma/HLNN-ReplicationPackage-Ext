@@ -10,7 +10,7 @@ import utils.toResourcePath
 class JavaScriptPreprocessor(userArgs: Array<String>) : Preprocessor(
     userArgs = userArgs,
     //
-    oracleFileSourcesPath = "java".toResourcePath(),
+    oracleFileSourcesPath = "/javascript".toResourcePath(),
     //
     lexerOf = { JavaScriptLexer(it) },
     parserOf = { JavaScriptParser(it) },
