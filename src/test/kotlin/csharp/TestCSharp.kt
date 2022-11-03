@@ -1,28 +1,21 @@
 package csharp
 
-import common.HETAMarshaller.Companion.toJSON
 import common.JSONSourceMarshaller.Companion.toJSONString
+import common.SnapshotTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import preprocessor.python3preprocessor.CSharpPreprocessor
 import java.io.File
 
-class TestCSharp {
+class TestCSharp : SnapshotTest {
 
-    private fun filepathOf(filename: String): String = "src/test/kotlin/csharp/files/${filename}"
-    private fun snapshotFilepathOf(filename: String) = filepathOf("${filename}.json")
-
-    private fun snapshot(filename: String) {
-        File(filepathOf(filename)).readText().let { src ->
-            CSharpPreprocessor(arrayOf()).tryToHetas(src)?.toJSON(snapshotFilepathOf(filename))
-        }
-    }
+    var language = "csharp"
 
     private fun assertSnapshot(filename: String) {
-        if (!File(snapshotFilepathOf(filename)).exists()) snapshot(filename)
-        val snapshotHetas: String = File(snapshotFilepathOf(filename)).readText()
+        if (!File(snapshotFilepathOf(language, filename)).exists()) snapshot(language, filename)
+        val snapshotHetas: String = File(snapshotFilepathOf(language, filename)).readText()
         val hetas: String? =
-            CSharpPreprocessor(arrayOf()).tryToHetas(File(filepathOf(filename)).readText())?.toJSONString()
+            CSharpPreprocessor(arrayOf()).tryToHetas(File(filepathOf(language, filename)).readText())?.toJSONString()
         assertEquals(snapshotHetas, hetas)
     }
 
