@@ -26,6 +26,16 @@ do
                 ./gradlew Python3Evaluator -Pargs="perFileTimeModel ../saved_model_losses/$fname false"
                 echo "$fname"
 
+        elif [[ $fname == cpp* ]];
+            then
+            ./gradlew CPPEvaluator -Pargs="perFileTimeModel ../saved_model_losses/$fname false"
+            echo "$fname"
+
+        elif [[ $fname == csharp* ]];
+            then
+            ./gradlew CSharpEvaluator -Pargs="perFileTimeModel ../saved_model_losses/$fname false"
+            echo "$fname"
+
         else
             echo "Invalid $fname"
         fi

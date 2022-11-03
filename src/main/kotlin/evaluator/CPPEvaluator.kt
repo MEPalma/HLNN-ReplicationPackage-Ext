@@ -21,8 +21,5 @@ class CPPEvaluator(
 )
 
 fun main(args: Array<String>) =
-//    CPPEvaluator(args).run()
-    CPPEvaluator(arrayOf("fileToHTMLBrute","testFiles/test.cpp")).run()
-//CPPEvaluator(arrayOf("renderTree","testFiles/test.cpp")).run()
-
+    CPPEvaluator(args).run()
 

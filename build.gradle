@@ -17,6 +17,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1-native-mt'
     implementation 'junit:junit:4.13.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
 
     // https://mvnrepository.com/artifact/org.antlr/antlr4
     antlr 'org.antlr:antlr4:4.9.2'
@@ -90,6 +91,30 @@ task Python3Preprocessor(type: JavaExec) {
 task Python3Evaluator(type: JavaExec) {
     args findProperty("args").toString().split(" ") ?: ""
     mainClass.set('evaluator.Python3EvaluatorKt')
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task CPPPreprocessor(type: JavaExec) {
+    args findProperty("args").toString().split(" ") ?: ""
+    mainClass.set('preprocessor.cpp.CPPPreprocessorKt')
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task CPPEvaluator(type: JavaExec) {
+    args findProperty("args").toString().split(" ") ?: ""
+    mainClass.set('evaluator.CPPEvaluatorKt')
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task CSharpPreprocessor(type: JavaExec) {
+    args findProperty("args").toString().split(" ") ?: ""
+    mainClass.set('preprocessor.csharppreprocessor.CSharpPreprocessorKt')
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task CSharpEvaluator(type: JavaExec) {
+    args findProperty("args").toString().split(" ") ?: ""
+    mainClass.set('evaluator.CSharpEvaluatorKt')
     classpath = sourceSets.main.runtimeClasspath
 }
 
