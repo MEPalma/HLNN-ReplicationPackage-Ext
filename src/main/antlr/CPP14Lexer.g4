@@ -28,6 +28,9 @@ UserDefinedLiteral:
 	| UserDefinedStringLiteral
 	| UserDefinedCharacterLiteral;
 
+//Include:
+//    '#include' ~ [\n]* -> channel (HIDDEN);
+
 MultiLineMacro:
 	'#' (~[\n]*? '\\' '\r'? '\n')+ ~ [\n]+ -> channel (HIDDEN);
 
@@ -404,6 +407,6 @@ Whitespace: [ \t]+ -> skip;
 
 Newline: ('\r' '\n'? | '\n') -> skip;
 
-BlockComment: '/*' .*? '*/' -> skip;
+BlockComment: '/*' .*? '*/' -> channel(HIDDEN);
 
-LineComment: '//' ~ [\r\n]* -> skip;
+LineComment: '//' ~ [\r\n]* -> channel(HIDDEN);

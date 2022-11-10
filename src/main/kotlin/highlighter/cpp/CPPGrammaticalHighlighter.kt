@@ -257,6 +257,11 @@ class CPPGrammaticalHighlighter : GrammaticalHighlighter, CPP14ParserBaseListene
         )
     }
 
+    override fun exitNestedNameSpecifier(ctx: CPP14Parser.NestedNameSpecifierContext?) {
+        super.exitNestedNameSpecifier(ctx)
+        // ToDo: :: use as member access.
+        // example: std::endl std::cout <- cout is the member in this case
+    }
 
     // +----------+
     // |  TYPES  |
