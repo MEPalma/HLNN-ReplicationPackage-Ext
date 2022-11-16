@@ -17,8 +17,7 @@ class CPPGrammaticalHighlighter : GrammaticalHighlighter, CPP14ParserBaseListene
         oHighlights[this.startIndex] = this
     }
 
-    override fun getOverrides(): Collection<OHighlight> =
-        this.oHighlights.values
+    override fun getOverrides(): Collection<OHighlight> = this.oHighlights.values
 
     override fun reset() {
         this.oHighlights.clear()
@@ -31,24 +30,20 @@ class CPPGrammaticalHighlighter : GrammaticalHighlighter, CPP14ParserBaseListene
         targetProductionIndex: Int? = null,
         onAddedExit: Boolean = false,
         reversed: Boolean = false,
-    ) =
-        this.loopingOnChildren(
-            parserVocab = CPP14Parser.ruleNames,
-            addReplacingFunc = { it.addReplacing() },
-            onTerminal = onTerminal,
-            targetTerminalIndex = targetTerminalIndex,
-            onProduction = onProduction,
-            targetProductionIndex = targetProductionIndex,
-            onAddedExit = onAddedExit,
-            reversed = reversed
-        )
+    ) = this.loopingOnChildren(
+        parserVocab = CPP14Parser.ruleNames,
+        addReplacingFunc = { it.addReplacing() },
+        onTerminal = onTerminal,
+        targetTerminalIndex = targetTerminalIndex,
+        onProduction = onProduction,
+        targetProductionIndex = targetProductionIndex,
+        onAddedExit = onAddedExit,
+        reversed = reversed
+    )
 
-    private fun assignOnFirstIdentifier(ctx: ParserRuleContext?, hcode: HCode) =
-        ctx.myLoopingOnChildren(
-            targetTerminalIndex = CPP14Lexer.Identifier,
-            onTerminal = { hcode },
-            onAddedExit = true
-        )
+    private fun assignOnFirstIdentifier(ctx: ParserRuleContext?, hcode: HCode) = ctx.myLoopingOnChildren(
+        targetTerminalIndex = CPP14Lexer.Identifier, onTerminal = { hcode }, onAddedExit = true
+    )
 
     // +-----------------+
     // |  DECLARATIONS  |
@@ -64,35 +59,6 @@ class CPPGrammaticalHighlighter : GrammaticalHighlighter, CPP14ParserBaseListene
             }
         }
     }
-//
-//
-//    override fun exitFunctionDefinition(ctx: CPP14Parser.FunctionDefinitionContext?) {
-//        // DeclaratorContext -> PointerDeclaratorContext
-//        ctx.myLoopingOnChildren(
-//            onProduction = { HCode.FUNCTION_DECLARATOR },
-//            targetProductionIndex = CPP14Parser.RULE_noPointerDeclarator
-////            targetProductionIndex = CPP14Parser.RULE_declarator
-//        )
-////        super.exitFunctionDefinition(ctx)
-//    }
-
-//
-//    override fun exitDeclarator(ctx: CPP14Parser.DeclaratorContext?) {
-//        if (ctx?.parent?.ruleContext is CPP14Parser.FunctionDefinitionContext) {
-//            ctx.myLoopingOnChildren(
-//                onProduction = { HCode.FUNCTION_DECLARATOR },
-//                targetProductionIndex = CPP14Parser.RULE_noPointerDeclarator
-//            )
-//        }
-//    }
-
-    // Variable declarations
-//    override fun exitDeclaratorid(ctx: CPP14Parser.DeclaratoridContext?) {
-//        ctx.myLoopingOnChildren(
-//            onProduction = { HCode.VARIABLE_DECLARATOR },
-//            targetProductionIndex = CPP14Parser.RULE_idExpression
-//        )
-//    }
 
     // Class member variable declarations
     override fun exitMemberdeclaration(ctx: CPP14Parser.MemberdeclarationContext?) {
@@ -100,8 +66,7 @@ class CPPGrammaticalHighlighter : GrammaticalHighlighter, CPP14ParserBaseListene
         if (secondChild is CPP14Parser.MemberDeclaratorListContext) {
             secondChild?.children?.filter { it is CPP14Parser.MemberDeclaratorContext }?.forEach { declarator ->
                 (declarator as CPP14Parser.MemberDeclaratorContext).myLoopingOnChildren(
-                    onProduction = { HCode.VARIABLE_DECLARATOR },
-                    targetProductionIndex = CPP14Parser.RULE_declarator
+                    onProduction = { HCode.VARIABLE_DECLARATOR }, targetProductionIndex = CPP14Parser.RULE_declarator
                 )
             }
         }
@@ -133,10 +98,8 @@ class CPPGrammaticalHighlighter : GrammaticalHighlighter, CPP14ParserBaseListene
     // Function definitions
     override fun exitNoPointerDeclarator(ctx: CPP14Parser.NoPointerDeclaratorContext?) {
         if (ctx?.children?.any { it is CPP14Parser.ParametersAndQualifiersContext } == true) {
-            ctx.myLoopingOnChildren(
-                targetProductionIndex = CPP14Parser.RULE_noPointerDeclarator,
-                onProduction = { HCode.FUNCTION_DECLARATOR }
-            )
+            ctx.myLoopingOnChildren(targetProductionIndex = CPP14Parser.RULE_noPointerDeclarator,
+                onProduction = { HCode.FUNCTION_DECLARATOR })
         }
     }
 
@@ -148,8 +111,7 @@ class CPPGrammaticalHighlighter : GrammaticalHighlighter, CPP14ParserBaseListene
         if (ctx?.parent?.ruleContext is CPP14Parser.UnaryExpressionContext) {
             if (ctx?.children?.getOrNull(1) is TerminalNode && accessors.any { it == (ctx?.children?.getOrNull(1) as TerminalNode).symbol.text }) {
                 ctx.myLoopingOnChildren(
-                    onProduction = { HCode.FIELD_IDENTIFIER },
-                    targetProductionIndex = CPP14Parser.RULE_idExpression
+                    onProduction = { HCode.FIELD_IDENTIFIER }, targetProductionIndex = CPP14Parser.RULE_idExpression
                 )
             }
         }
@@ -196,20 +158,17 @@ class CPPGrammaticalHighlighter : GrammaticalHighlighter, CPP14ParserBaseListene
                     }
                 } else if (accessors.any { it == secondParentChild.symbol.text }) {
                     ctx.myLoopingOnChildren(
-                        onProduction = { HCode.FIELD_IDENTIFIER },
-                        targetProductionIndex = CPP14Parser.RULE_idExpression
+                        onProduction = { HCode.FIELD_IDENTIFIER }, targetProductionIndex = CPP14Parser.RULE_idExpression
                     )
                 }
             }
         }
-//        super.exitPostfixExpression(ctx)
     }
 
     // inheritance types
     override fun exitBaseTypeSpecifier(ctx: CPP14Parser.BaseTypeSpecifierContext?) {
         ctx.myLoopingOnChildren(
-            onProduction = { HCode.TYPE_IDENTIFIER },
-            targetProductionIndex = CPP14Parser.RULE_classOrDeclType
+            onProduction = { HCode.TYPE_IDENTIFIER }, targetProductionIndex = CPP14Parser.RULE_classOrDeclType
         )
     }
 
@@ -222,30 +181,13 @@ class CPPGrammaticalHighlighter : GrammaticalHighlighter, CPP14ParserBaseListene
                 reversed = true,
                 onAddedExit = true
             )
-//            var typeName = ctx?.children?.getOrNull(1)
-
         }
     }
 
-    override fun enterSimpleTemplateId(ctx: CPP14Parser.SimpleTemplateIdContext?) {
-//        var fifthParent = ctx?.parent?.parent?.parent?.parent?.parent?.parent?.parent
-//        if(fifthParent)
-
-        super.enterSimpleTemplateId(ctx)
-    }
-
     override fun exitTemplateName(ctx: CPP14Parser.TemplateNameContext?) {
-//        super.exitTemplateName(ctx)
-//        if (ctx?.parent?.ruleContext is CPP14Parser.SimpleTemplateIdContext && ctx?.parent?.childCount )
         ctx.myLoopingOnChildren(
-            onTerminal = { HCode.TYPE_IDENTIFIER },
-            targetTerminalIndex = CPP14Lexer.Identifier
+            onTerminal = { HCode.TYPE_IDENTIFIER }, targetTerminalIndex = CPP14Lexer.Identifier
         )
-    }
-
-
-    override fun exitSimpleTemplateId(ctx: CPP14Parser.SimpleTemplateIdContext?) {
-        super.exitSimpleTemplateId(ctx)
     }
 
     override fun exitEnumHead(ctx: CPP14Parser.EnumHeadContext?) {
@@ -257,15 +199,15 @@ class CPPGrammaticalHighlighter : GrammaticalHighlighter, CPP14ParserBaseListene
         )
     }
 
-    override fun exitNestedNameSpecifier(ctx: CPP14Parser.NestedNameSpecifierContext?) {
-        super.exitNestedNameSpecifier(ctx)
-        // ToDo: :: use as member access.
-        // example: std::endl std::cout <- cout is the member in this case
+    override fun exitQualifiedId(ctx: CPP14Parser.QualifiedIdContext?) {
+        if (ctx?.children?.get(0) is CPP14Parser.NestedNameSpecifierContext) {
+            var nestedNameCtx = ctx?.children?.getOrNull(0)
+            if ((nestedNameCtx as CPP14Parser.NestedNameSpecifierContext).children.getOrNull(1)?.text.equals("::")) {
+                ctx.myLoopingOnChildren(
+                    onProduction = { HCode.FIELD_IDENTIFIER }, targetProductionIndex = CPP14Parser.RULE_unqualifiedId
+                )
+            }
+        }
     }
-
-    // +----------+
-    // |  TYPES  |
-    //+----------+
-
 
 }

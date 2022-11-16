@@ -8,8 +8,7 @@ import utils.toResourcePath
 
 class CPPEvaluator(
     userArgs: Array<String>,
-) : Evaluator(
-    userArgs = userArgs,
+) : Evaluator(userArgs = userArgs,
     languageName = "cpp",
     oracleFileSourcesPath = "cpp".toResourcePath(),
     logOutputFilePath = "cpp".toResourcePath(),
@@ -17,9 +16,7 @@ class CPPEvaluator(
     parserOf = { CPP14Parser(it) },
     lexicalHighlighter = { cppLexicalHighlighter(it) },
     grammaticalHighlighter = CPPGrammaticalHighlighter(),
-    startRuleOf = { (it as CPP14Parser).translationUnit() }
-)
+    startRuleOf = { (it as CPP14Parser).translationUnit() })
 
-fun main(args: Array<String>) =
-    CPPEvaluator(args).run()
+fun main(args: Array<String>) = CPPEvaluator(args).run()
 

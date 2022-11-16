@@ -14,9 +14,7 @@ class CPPTest : SnapshotTest {
     private fun assertSnapshot(filename: String) {
         if (!File(snapshotFilepathOf(language, filename)).exists()) snapshot(language, filename)
         val snapshotHetas: String = File(snapshotFilepathOf(language, filename)).readText()
-        val hetas: String? =
-            preprocessor.tryToHetas(File(filepathOf(language, filename)).readText())
-                ?.toJSONString()
+        val hetas: String? = preprocessor.tryToHetas(File(filepathOf(language, filename)).readText())?.toJSONString()
         Assertions.assertEquals(snapshotHetas, hetas)
     }
 

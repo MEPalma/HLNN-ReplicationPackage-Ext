@@ -42,7 +42,6 @@ fun cppLexicalHighlighter(eta: ETA): HETA = when (eta.tokenRule) {
         CPP14Lexer.Friend,
         CPP14Lexer.Goto,
         CPP14Lexer.If,
-        //CPP14Lexer.Include,
         CPP14Lexer.Inline,
         CPP14Lexer.Int,
         CPP14Lexer.Long,
@@ -114,7 +113,7 @@ fun cppLexicalHighlighter(eta: ETA): HETA = when (eta.tokenRule) {
 
     in hashSetOf(
         CPP14Lexer.LineComment, CPP14Lexer.BlockComment, CPP14Lexer.Directive, CPP14Lexer.MultiLineMacro,
-        ) -> hetaOf(eta, COMMENT)
+    ) -> hetaOf(eta, COMMENT)
 
     else -> hetaOf(eta, ANY)
 }
