@@ -37,7 +37,8 @@ abstract class Evaluator(
     val grammaticalHighlighter: GrammaticalHighlighter,
     val startRuleOf: (Parser) -> RuleContext,
     val relativePythonRunnerPath: String = "src/main/python/highlighter",
-    val lexerChannels: Array<Int> = arrayOf(Token.HIDDEN_CHANNEL)
+    val lexerChannels: Array<Int> = arrayOf(Token.HIDDEN_CHANNEL),
+    val parserChannel: Int=Token.DEFAULT_CHANNEL
 ) : Runnable {
     private val REPEATS: Int = 30
     private val SHELL_LAUNCH_SYS_CALL: String = "/bin/bash"
@@ -420,7 +421,7 @@ abstract class Evaluator(
         fun renderText(src: String) {
             val charStream = CharStreams.fromString(src)
             val lexer = this.lexerOf(charStream)
-            val tokenStreams = CommonTokenStream(lexer)
+            val tokenStreams = CommonTokenStream(lexer,2)
             val parser = parserOf(tokenStreams)
             val parseTree = startRuleOf(parser)
             val treeView = TreeViewer(parser.ruleNames.toList(), parseTree)
@@ -453,7 +454,7 @@ abstract class Evaluator(
         jframe.isVisible = true
     }
 
-    private fun fileToHTMLBrute(filepath: String) {
+    open fun fileToHTMLBrute(filepath: String) {
         File(filepath).readText().let { src ->
             var startRule: RuleContext? = null
             src.tryToETAS(
@@ -462,7 +463,8 @@ abstract class Evaluator(
                 startRuleOf = { startRuleOf(it).let { st -> startRule = st; st } },
                 resolver = ETAMarshaller::tryFromContext,
                 lexerChannels = lexerChannels,
-                withErrorListeners = false
+                withErrorListeners = false,
+                parserChannel = parserChannel
             )?.let { etas ->
                 val hetas = etas.highlightedAs { lexicalHighlighter(it) }
                 startRule?.let {

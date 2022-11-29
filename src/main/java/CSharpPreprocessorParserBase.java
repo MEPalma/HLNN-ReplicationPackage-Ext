@@ -2,7 +2,7 @@ import org.antlr.v4.runtime.*;
 import java.util.Stack;
 import java.util.HashSet;
 
-abstract class CSharpPreprocessorParserBase extends Parser
+public abstract class CSharpPreprocessorParserBase extends Parser
 {
     protected CSharpPreprocessorParserBase(TokenStream input)
     {

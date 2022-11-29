@@ -13,7 +13,8 @@ fun String.tryToETAS(
     resolver: (ParseTree, Vocabulary, Array<String>) -> ETA?,
     lexerChannels: Array<Int> = arrayOf(Token.HIDDEN_CHANNEL),
     antlrErrorListener: ANTLRErrorStrategy = DefaultErrorStrategy(),
-    withErrorListeners: Boolean = false
+    withErrorListeners: Boolean = false,
+    parserChannel: Int=Token.DEFAULT_CHANNEL
 ): Array<ETA>? =
     try {
         val charStream = CharStreams.fromString(this)
@@ -24,7 +25,7 @@ fun String.tryToETAS(
             lexer.removeErrorListeners()
         val lexerVocab = lexer.vocabulary
         //
-        val tokenStreams = CommonTokenStream(lexer)
+        val tokenStreams = CommonTokenStream(lexer,parserChannel)
 
         // Parser.
         val parser = parserOf(tokenStreams)

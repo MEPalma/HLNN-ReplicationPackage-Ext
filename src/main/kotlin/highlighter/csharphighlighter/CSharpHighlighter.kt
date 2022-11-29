@@ -164,3 +164,24 @@ fun csharpSemiLexicalHighlighter(eta: ETA): HETA =
             else -> heta
         }
     }
+
+
+fun csharpPreLexicalHighlighter(eta: ETA): HETA =
+    when (eta.tokenRule) {
+        in hashSetOf(
+            CSharpLexer.SHARP,
+            CSharpLexer.DEFINE,
+            CSharpLexer.UNDEF,
+            CSharpLexer.ENDIF,
+            CSharpLexer.ELIF,
+            CSharpLexer.ERROR,
+            CSharpLexer.WARNING,
+            CSharpLexer.REGION,
+            CSharpLexer.ENDREGION,
+            CSharpLexer.PRAGMA,
+//            CSharpLexer.DIRECTIVE_IF,
+//            CSharpLexer.DIRECTIVE_TRUE,
+//            CSharpLexer.DIRECTIVE_FALSE
+        ) -> hetaOf(eta, KEYWORD)
+        else -> hetaOf(eta, ANY)
+    }

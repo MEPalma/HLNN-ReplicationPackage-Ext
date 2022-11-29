@@ -321,6 +321,10 @@ class CSharpGrammaticalHighlighter : GrammaticalHighlighter, CSharpParserBaseLis
         }
     }
 
+    // +------------+
+    // | DIRECTIVES  |
+    // +------------+
+
 //    override fun exitMemberAccessExpression(ctx: CSharpParser.MemberAccessExpressionContext?) {
 //
 //    }

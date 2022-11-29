@@ -6,6 +6,10 @@ parser grammar CSharpPreprocessorParser;
 
 options { tokenVocab=CSharpLexer; superClass=CSharpPreprocessorParserBase; }
 
+preprocessor_directives
+    : preprocessor_directive+ EOF
+    ;
+
 preprocessor_directive returns [Boolean value]
 	: DEFINE CONDITIONAL_SYMBOL directive_new_line_or_sharp { this.OnPreprocessorDirectiveDefine(); }  #preprocessorDeclaration
 	| UNDEF CONDITIONAL_SYMBOL directive_new_line_or_sharp { this.OnPreprocessorDirectiveUndef(); } #preprocessorDeclaration

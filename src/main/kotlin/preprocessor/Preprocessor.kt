@@ -24,6 +24,14 @@ abstract class Preprocessor(
     //
     val lexicalHighlighter: (ETA) -> HETA,
     val grammaticalHighlighter: GrammaticalHighlighter,
+
+    // Different implementation needed?
+    /*
+    val directives_startRule: (Parser) -> RuleContext,
+    val directives_HL: GrammaticalHighlighter,
+    val directives_lxHL: (ETA) -> HETA,
+    val directives_Parser: (CommonTokenStream) -> Parser
+    */
 ) : Runnable {
     open fun generateOracle() {
         val jetasFile = File("$oracleFileSourcesPath/oracle/jetas.json")
