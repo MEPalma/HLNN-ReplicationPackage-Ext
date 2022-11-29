@@ -52,11 +52,10 @@ fun String.tryToETAS(
             }
         }
 
-        // Collect all tokens from hidden channel.
+        // Collect all tokens from lexer channels.
         lexerChannels.forEach { _ ->
             tokenStreams.seek(0)
             tokenStreams.tokens
-                .filter { it.channel == Token.HIDDEN_CHANNEL }
                 .forEach {
                     etas.add(
                         ETA(

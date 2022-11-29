@@ -3,7 +3,8 @@ package evaluator
 import CSharpLexer
 import CSharpParser
 import highlighter.csharphighlighter.CSharpGrammaticalHighlighter
-import highlighter.csharphighlighter.csharpSemiLexicalHighlighter
+import highlighter.csharphighlighter.csharpPreprocessingLexicalHighlighter
+import org.antlr.v4.runtime.Token
 import utils.toResourcePath
 
 class CSharpEvaluator(
@@ -15,9 +16,11 @@ class CSharpEvaluator(
     logOutputFilePath = "csharp".toResourcePath(),
     lexerOf = { CSharpLexer(it) },
     parserOf = { CSharpParser(it) },
-    lexicalHighlighter = { csharpSemiLexicalHighlighter(it) },
+    lexicalHighlighter = { csharpPreprocessingLexicalHighlighter(it) },
     grammaticalHighlighter = CSharpGrammaticalHighlighter(),
-    startRuleOf = { (it as CSharpParser).compilation_unit() }
+    startRuleOf = { (it as CSharpParser).compilation_unit() },
+    lexerChannels =  arrayOf(Token.HIDDEN_CHANNEL, CSharpLexer.DIRECTIVE)
+
 )
 
 fun main(args: Array<String>) =
