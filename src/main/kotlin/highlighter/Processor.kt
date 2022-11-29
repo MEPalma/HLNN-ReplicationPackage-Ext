@@ -53,9 +53,10 @@ fun String.tryToETAS(
         }
 
         // Collect all tokens from lexer channels.
-        lexerChannels.forEach { _ ->
+        lexerChannels.forEach { channelInt ->
             tokenStreams.seek(0)
             tokenStreams.tokens
+                .filter { it.channel == channelInt }
                 .forEach {
                     etas.add(
                         ETA(
