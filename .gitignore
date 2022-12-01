@@ -106,3 +106,4 @@ $RECYCLE.BIN/
 # Test Files
 out.html
 testFiles/
+src/main/resources/
