@@ -167,38 +167,7 @@ fun csharpPreprocessingLexicalHighlighter(eta: ETA): HETA = csharpSemiLexicalHig
     when (heta.eta.tokenRule) {
         in hashSetOf(
             /* consider DIRECTIVES as comments */
-            CSharpLexer.SHARP,
-            CSharpLexer.DIRECTIVE_WHITESPACES,
-            CSharpLexer.DIGITS,
-            CSharpLexer.DIRECTIVE_TRUE,
-            CSharpLexer.DIRECTIVE_FALSE,
-            CSharpLexer.DEFINE,
-            CSharpLexer.UNDEF,
-            CSharpLexer.DIRECTIVE_IF,
-            CSharpLexer.ELIF,
-            CSharpLexer.DIRECTIVE_ELSE,
-            CSharpLexer.ENDIF,
-            CSharpLexer.LINE,
-            CSharpLexer.ERROR,
-            CSharpLexer.WARNING,
-            CSharpLexer.REGION,
-            CSharpLexer.ENDREGION,
-            CSharpLexer.PRAGMA,
-            CSharpLexer.NULLABLE,
-            CSharpLexer.DIRECTIVE_DEFAULT,
-            CSharpLexer.DIRECTIVE_HIDDEN,
-            CSharpLexer.DIRECTIVE_OPEN_PARENS,
-            CSharpLexer.DIRECTIVE_CLOSE_PARENS,
-            CSharpLexer.DIRECTIVE_BANG,
-            CSharpLexer.DIRECTIVE_OP_EQ,
-            CSharpLexer.DIRECTIVE_OP_NE,
-            CSharpLexer.DIRECTIVE_OP_AND,
-            CSharpLexer.DIRECTIVE_OP_OR,
-            CSharpLexer.DIRECTIVE_STRING,
-            CSharpLexer.CONDITIONAL_SYMBOL,
-            CSharpLexer.DIRECTIVE_SINGLE_LINE_COMMENT,
-            CSharpLexer.DIRECTIVE_NEW_LINE,
-            CSharpLexer.TEXT,
+            CSharpLexer.DIRECTIVE_SRC
         ) -> hetaOf(heta.eta, COMMENT)
 
         else -> heta
