@@ -150,7 +150,7 @@ class CNNEncoder(torch.nn.Module):
     def forward(self, seq):
         token_emb = self.token_embedding(seq)
         pos_emb = 0  # ??
-        embedded = (token_emb + pos_emb)
+        embedded = torch.stack(token_emb, pos_emb)
         # 3.2 add lin. transformation
         inp = self.emb2hidden(embedded)
 
@@ -163,7 +163,7 @@ class CNNEncoder(torch.nn.Module):
             out = torch.nn.functional.glu(out)
 
             # add residual connection ??
-            out = (out + inp)
+            out = torch.stack(out, inp)
             # apply scaling
             out = out * self.scale
 
