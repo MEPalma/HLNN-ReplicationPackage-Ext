@@ -3,6 +3,7 @@ import json
 import torch
 import numpy as np
 import models as models
+from cnn import CNNClassifier1
 import os.path
 import pickle
 import random
@@ -30,6 +31,15 @@ KOTLIN_LEXER_NORMALISED_MAX_TOKEN_VAL: int = 113
 PYTHON3_LANG_NAME: str = 'python3'
 PYTHON3_LEXER_MAX_TOKEN_VAL: int = 100
 PYTHON3_LEXER_NORMALISED_MAX_TOKEN_VAL: int = 68
+#
+# JAVASCRIPT
+# ---------------------------------
+#
+# C++
+# ---------------------------------
+#
+# C#
+# ---------------------------------
 
 # CPP
 # ---------------------------------
@@ -55,6 +65,7 @@ CS_LANG_NAME_LEXER_NORMALISED_MAX_TOKEN_VAL: int = -1
 LSTMClassifier1 = 'LSTMClassifier1'
 GRUClassifier1 = 'GRUClassifier1'
 RNNClassifier1 = 'RNNClassifier1'
+CNNClassifier1 = 'CNNClassifier1'
 
 # StackOverflow snippets size.
 SO_JAVA_MIN: int = 1
@@ -222,7 +233,7 @@ def __sample_lines_as__(lookup_indexes, tlln, mloc, stdloc, minloc, maxloc):
     res = None
     # Sample gaussian random number of lines of its kind.
     num_loc = round(np.random.normal(mloc, stdloc))
-    if not(tlln - num_loc < 0 or not(minloc <= num_loc <= maxloc)):
+    if not (tlln - num_loc < 0 or not (minloc <= num_loc <= maxloc)):
         # File is at least of such length.
         tail_end_index = tlln - num_loc
         line_start_index = random.randint(0, tail_end_index)
@@ -233,6 +244,7 @@ def __sample_lines_as__(lookup_indexes, tlln, mloc, stdloc, minloc, maxloc):
         #
         res = char_start_index, char_stop_index
     return res
+
 
 class Config:
     def __init__(
@@ -387,9 +399,9 @@ class Config:
 
     def generate_folds(self):
         clean_jhetas = load_json(self.jhetas_clean_filepath)
-        assert(len(clean_jhetas) == 20_000)
+        assert (len(clean_jhetas) == 20_000)
         #
-        val_len = 1333 # 0.1*(0.66666..*20000)
+        val_len = 1333  # 0.1*(0.66666..*20000)
         kfold = KFold(n_splits=3, shuffle=True, random_state=self.seed_code)
         for foldid, (trainval_is, test_is) in enumerate(kfold.split(range(20_000))):
             val_is = trainval_is[0:val_len]
@@ -399,7 +411,8 @@ class Config:
             dump_json(self.get_jhetas_validation_path_of_fold(foldid), [clean_jhetas[i] for i in val_is])
             dump_json(self.get_jhetas_testing_path_of_fold(foldid), [clean_jhetas[i] for i in test_is])
             #
-            print(f"Fold {foldid}: Training:', {len(train_is)}, 'Validation:', {len(val_is)}, 'Test size:', {len(test_is)}")
+            print(
+                f"Fold {foldid}: Training:', {len(train_is)}, 'Validation:', {len(val_is)}, 'Test size:', {len(test_is)}")
 
     def generate_folds_snippets(self, number_of_snippets=5000):
         if self.lang_name == JAVA_LANG_NAME:
@@ -462,7 +475,8 @@ class Config:
                         eta = heta['eta']
                         etasi = eta['startIndex']
                         etaei = eta['stopIndex']
-                        if (char_start_index <= etasi <= char_stop_index < etaei) or (etasi < char_start_index <= etaei <= char_stop_index):
+                        if (char_start_index <= etasi <= char_stop_index < etaei) or (
+                                etasi < char_start_index <= etaei <= char_stop_index):
                             # Multiline token outside range: abandon this sample.
                             new_hetas = []
                             break
@@ -529,6 +543,24 @@ class Config:
                 num_layers=self.hidden_layers,
                 is_bidirectional=self.is_bidirectional
             )
+        elif self.model_name == CNNClassifier1:
+            model = CNNClassifier1(
+                # Shared params
+                emb_dim=self.embs_dim,
+                hid_dim=self.hidden_dim,
+                max_length=300,  # ToDo: add param to self
+                # Encoder params
+                input_dim=self.input_dim,
+                enc_layers=self.hidden_layers,
+                enc_kernel_size=3,  # ToDo: add param to self
+                enc_dropout=0.25,
+                # Decoder params
+                output_dim=self.task_max_val + 1,
+                dec_layers=self.hidden_layers,
+                dec_kernel_size=3,
+                dec_dropout=0.25,  # ToDo add param to self
+                trg_pad_idx=0  # ToDo: add param to self - Padding token index (from vocab)
+            )
         else:
             raise ValueError(self.model_name + ' is an invalid model name.')
         #
@@ -541,10 +573,10 @@ class Config:
         model = self.new_model()
         optimiser = torch.optim.Adam(model.parameters(), lr=self.lr_start)
         scheduler = torch.optim.lr_scheduler.StepLR(
-                                                optimiser,
-                                                step_size=self.lr_step_size,
-                                                gamma=self.lr_gamma,
-                                                verbose=True)
+            optimiser,
+            step_size=self.lr_step_size,
+            gamma=self.lr_gamma,
+            verbose=True)
         loss_func = torch.nn.CrossEntropyLoss()
         return model, optimiser, scheduler, loss_func
 
@@ -574,9 +606,9 @@ class Config:
         #
         return model
 
-    def __cache_adapt_and_push_to_device__(self, cache: ([torch.Tensor], [torch.Tensor])) -> ([torch.Tensor], [torch.Tensor]):
+    def __cache_adapt_and_push_to_device__(self, cache: ([torch.Tensor], [torch.Tensor])) -> (
+            [torch.Tensor], [torch.Tensor]):
         for i in range(len(cache[0])):
             cache[0][i] = cache[0][i].to(self.device)
             cache[1][i] = as_adapted_target_of(cache[1][i], self.task_adapter).to(self.device)
         return cache
-

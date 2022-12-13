@@ -94,12 +94,13 @@ class RNNClassifier1(torch.nn.Module):
         return out
 
 
-class CNNClassifier1(torch.nn.Module):
+class CNNClassifier2(torch.nn.Module):
     def __init__(self, embedding_dim, hidden_dim, vocab_size, max_input_len, tagset_size, enc_kernel_size,
-                 enc_num_layers, dec_kernel_size, dec_num_layers, dropout_p):
+                 enc_num_layers, dec_kernel_size, dec_num_layers, dropout_p, num_heads):
         self.encoder = CNNEncoder(embedding_dim, hidden_dim, vocab_size, max_input_len, enc_kernel_size, enc_num_layers,
                                   dropout_p)
-        self.decoder = CNNEDecoder(embedding_dim, hidden_dim, vocab_size, tagset_size, dec_kernel_size, dec_num_layers)
+        self.decoder = CNNEDecoder(embedding_dim, hidden_dim, vocab_size, tagset_size, dec_kernel_size, dec_num_layers,
+                                   num_heads)
 
     def forward(self, seq):
         z = self.encoder(seq)
@@ -174,7 +175,8 @@ class CNNEncoder(torch.nn.Module):
 
 
 class CNNEDecoder(torch.nn.Module):
-    def __init__(self, embedding_dim, hidden_dim, vocab_size, tagset_size, dec_kernel_size, dec_num_layers, dropout_p):
+    def __init__(self, embedding_dim, hidden_dim, vocab_size, tagset_size, dec_kernel_size, dec_num_layers, dropout_p,
+                 num_heads):
         self.embedding_dim = embedding_dim
         # 3.1 Position Embeddings
         #   embed input elements w = (w1,...,wm)
@@ -197,6 +199,7 @@ class CNNEDecoder(torch.nn.Module):
                 for i in range(dec_num_layers)])
 
         # 3.3 Multi-step Attention
+        self.multihead_attn = torch.nn.MultiheadAttention(embedding_dim, num_heads)
         #   add attention here
 
         self.dropout = torch.nn.Dropout(dropout_p)
@@ -207,15 +210,22 @@ class CNNEDecoder(torch.nn.Module):
         attention = 0
         return attention
 
-    def forward(self, seq):
+    def forward(self, seq, last_attn: torch.Tensor):
 
         # input??
+        # Initialize previous attention (alignment) to zeros
+        #if last_attn is None:
+        #    last_attn = value.new_zeros(batch_size, seq_len)
+
         inp = 0
         for conv_layer in self.convolutional_layers:
             out = self.dropout(inp)
             out = conv_layer(out)
             out = torch.nn.functional.glu(out)
             # attention ???
+            query, key, value = 0, 0, 0
+            attn_output, attn_weights = self.multihead_attn(query, key, value)
+
             # here ??
 
         out = self.fc1(out)
