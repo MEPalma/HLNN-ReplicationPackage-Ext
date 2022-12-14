@@ -3,7 +3,7 @@ import json
 import torch
 import numpy as np
 import models as models
-from cnn import CNNClassifier1
+import cnn
 import os.path
 import pickle
 import random
@@ -253,7 +253,7 @@ class Config:
             run_code: int = 1,
             #
             task: [(int, str)] = TASK_L_D_I_A,
-            model_name: str = LSTMClassifier1,
+            model_name: str = CNNClassifier1,
             embs_dim: int = 1,
             hidden_dim: int = 128,
             hidden_layers: int = 1,
@@ -341,6 +341,7 @@ class Config:
         self.session_prefix_path: str = f"{self.lang_name}_{runc}_{taskc}_"
         self.module_path: str = f"../saved_models/{self.session_prefix_path}{self.config_name}.pt"
         self.session_loss_evo_path: str = f"../saved_model_losses/{self.session_prefix_path}{self.config_name}.json"
+        self.padding_token = 999  # ToDo: define correct padding token
 
     def apply_config_of(self, config):
         tmp_device = self.device
@@ -544,22 +545,32 @@ class Config:
                 is_bidirectional=self.is_bidirectional
             )
         elif self.model_name == CNNClassifier1:
-            model = CNNClassifier1(
+            print('Task max val+1: ', (self.task_max_val + 1))
+            model = cnn.CNNClassifier2(
+                vocab_size=self.input_dim,
+                feature_size=self.embs_dim,
+                kernel_size=3,
+                layers=self.hidden_layers,
+                num_classes=self.task_max_val + 1
+
                 # Shared params
-                emb_dim=self.embs_dim,
-                hid_dim=self.hidden_dim,
-                max_length=300,  # ToDo: add param to self
-                # Encoder params
-                input_dim=self.input_dim,
-                enc_layers=self.hidden_layers,
-                enc_kernel_size=3,  # ToDo: add param to self
-                enc_dropout=0.25,
-                # Decoder params
-                output_dim=self.task_max_val + 1,
-                dec_layers=self.hidden_layers,
-                dec_kernel_size=3,
-                dec_dropout=0.25,  # ToDo add param to self
-                trg_pad_idx=0  # ToDo: add param to self - Padding token index (from vocab)
+                # input_dim=self.input_dim,
+                # emb_dim=self.embs_dim,
+                # hid_dim=self.hidden_dim,
+                # enc_layers=self.hidden_layers,
+                # tagset_size=self.task_max_val +1
+                # max_length=300,  # ToDo: add param to self
+                # # Encoder params
+                # input_dim=self.input_dim,
+                # enc_layers=self.hidden_layers,
+                # enc_kernel_size=3,  # ToDo: add param to self
+                # enc_dropout=0.25,
+                # # Decoder params
+                # output_dim=self.task_max_val + 1,
+                # dec_layers=self.hidden_layers,
+                # dec_kernel_size=3,
+                # dec_dropout=0.25,  # ToDo add param to self
+                # trg_pad_idx=0  # ToDo: add param to self - Padding token index (from vocab)
             )
         else:
             raise ValueError(self.model_name + ' is an invalid model name.')
@@ -577,6 +588,9 @@ class Config:
             step_size=self.lr_step_size,
             gamma=self.lr_gamma,
             verbose=True)
+        #if self.model_name == CNNClassifier1:
+        #    loss_func = torch.nn.CrossEntropyLoss(ignore_index=self.padding_token)
+        #else:
         loss_func = torch.nn.CrossEntropyLoss()
         return model, optimiser, scheduler, loss_func
 
