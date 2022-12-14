@@ -107,3 +107,9 @@ $RECYCLE.BIN/
 out.html
 testFiles/
 src/main/resources/
+
+# bak files
+*.bak
+src/main/python/saved_models/bakCnn/
+src/main/python/saved_model_losses/bakCnn/
+

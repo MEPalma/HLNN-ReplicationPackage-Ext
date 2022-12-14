@@ -52,9 +52,9 @@ abstract class Evaluator(
         val prInputModel = BufferedReader(InputStreamReader(prModel.inputStream))
         val prOutputModel = BufferedWriter(OutputStreamWriter(prModel.outputStream))
         prOutputModel.writeNewLineAndFlush("cd $relativePythonRunnerPath")
-        prOutputModel.writeNewLineAndFlush("python --version")
+        prOutputModel.writeNewLineAndFlush("python3 --version")
         prInputModel.readAllLines(eager = true).printlnIn(YELLOW_BACKGROUND)
-        prOutputModel.writeNewLineAndFlush("python main.py use $relativeTargetModelPath $foldName")
+        prOutputModel.writeNewLineAndFlush("python3 main.py use $relativeTargetModelPath $foldName")
         prInputModel.readAllLines(eager = true).printlnIn(YELLOW_BACKGROUND)
         return Pair(prInputModel, prOutputModel)
     }

@@ -12,15 +12,15 @@ class Encoder(nn.Module):
                  n_layers,
                  kernel_size,
                  dropout,
-                 #device,
+                 # device,
                  max_length=100):
         super().__init__()
 
         assert kernel_size % 2 == 1, "Kernel size must be odd!"
 
-        #self.device = device
+        # self.device = device
 
-        self.scale = torch.sqrt(torch.FloatTensor([0.5]))#.to(device)
+        self.scale = torch.sqrt(torch.FloatTensor([0.5]))  # .to(device)
 
         self.tok_embedding = nn.Embedding(input_dim, emb_dim)
         self.pos_embedding = nn.Embedding(max_length, emb_dim)
@@ -43,7 +43,7 @@ class Encoder(nn.Module):
         src_len = src.shape[1]
 
         # create position tensor
-        pos = torch.arange(0, src_len).unsqueeze(0).repeat(batch_size, 1)#.to(self.device)
+        pos = torch.arange(0, src_len).unsqueeze(0).repeat(batch_size, 1)  # .to(self.device)
 
         # pos = [0, 1, 2, 3, ..., src len - 1]
 
@@ -115,15 +115,15 @@ class Decoder(nn.Module):
                  kernel_size,
                  dropout,
                  trg_pad_idx,
-                 #device,
+                 # device,
                  max_length=100):
         super().__init__()
 
         self.kernel_size = kernel_size
         self.trg_pad_idx = trg_pad_idx
-        #self.device = device
+        # self.device = device
 
-        self.scale = torch.sqrt(torch.FloatTensor([0.5]))#.to(device)
+        self.scale = torch.sqrt(torch.FloatTensor([0.5]))  # .to(device)
 
         self.tok_embedding = nn.Embedding(output_dim, emb_dim)
         self.pos_embedding = nn.Embedding(max_length, emb_dim)
@@ -181,7 +181,7 @@ class Decoder(nn.Module):
 
         return attention, attended_combined
 
-    def forward(self, trg, encoder_conved, encoder_combined):
+    def forward(self, trg, encoder_conved, encoder_combined): # why do we need the trg sequence here instead of encoder ouput?
         # trg = [batch size, trg len]
         # encoder_conved = encoder_combined = [batch size, src len, emb dim]
 
@@ -189,7 +189,7 @@ class Decoder(nn.Module):
         trg_len = trg.shape[1]
 
         # create position tensor
-        pos = torch.arange(0, trg_len).unsqueeze(0).repeat(batch_size, 1)#.to(self.device)
+        pos = torch.arange(0, trg_len).unsqueeze(0).repeat(batch_size, 1)  # .to(self.device)
 
         # pos = [batch size, trg len]
 
@@ -225,7 +225,7 @@ class Decoder(nn.Module):
             # need to pad so decoder can't "cheat"
             padding = torch.zeros(batch_size,
                                   hid_dim,
-                                  self.kernel_size - 1).fill_(self.trg_pad_idx)#.to(self.device)
+                                  self.kernel_size - 1).fill_(self.trg_pad_idx)  # .to(self.device)
 
             padded_conv_input = torch.cat((padding, conv_input), dim=2)
 
@@ -322,3 +322,73 @@ class CNNClassifier1(nn.Module):
         # attention = [batch size, trg len - 1, src len]
 
         return output, attention
+
+
+class CNNClassifier2(nn.Module):
+    def __init__(self, vocab_size, feature_size, kernel_size, layers, num_classes=3):
+        super(CNNClassifier2, self).__init__()
+        # UM?
+        self.vocab_size = vocab_size
+        # embeded_dim: Dimension of word vectors.
+        self.feature_size = feature_size
+
+        self.embed = nn.Embedding(self.vocab_size, self.feature_size)
+
+        self.convs = nn.ModuleList([nn.Conv1d(in_channels=self.feature_size,
+                                             out_channels=2*self.feature_size,#2*?
+                                             kernel_size=kernel_size,
+                                             padding=1) #(kernel_size - 1) // 2)
+                                   for _ in range(layers)])
+
+        # Activation
+        self.act = nn.ReLU()
+
+        # Pooling
+        self.pool = nn.MaxPool2d(3, 2, 1)
+
+        # fully connected layer
+        #self.fc1 = nn.Linear(480, num_classes)
+        self.fc1 = nn.Linear(self.feature_size, num_classes)
+
+        # dropout
+        self.drop = nn.Dropout(p=0.5)
+
+    # seen in the network pytorch tutorial
+    # I've been using this function for years, no idea what it does.
+    # Would it kill the pytorch tutorial people to document this guy?
+    def num_flat_features(self, x):
+        size = x.size()[1:]  # all dimensions except the batch dimension
+        num_features = 1
+        for s in size:
+            num_features *= s
+        return num_features
+
+    def forward(self, x):
+        # Output shape: (inp_len, embedded_dim)
+        x = self.embed(x)
+
+        # add batch dimension: (inp_len, embedded_dim, batch)
+        x = x.unsqueeze(1)
+        # Permute shuffles dimensions. Do this to satisfy requirments of nn.Conv1d
+        # Output shape: (inp_len, batch, embedded_dim)
+        x = x.permute(0, 2, 1)
+
+
+        # convolutional layers
+        for i, conv in enumerate(self.convs):
+            x = conv(x)
+            x = self.act(x)
+            x = self.pool(x)
+
+        # flattening
+        x = x.view(-1, self.num_flat_features(x))
+
+        # Trying to figure out the shape
+        # print(x.shape)
+
+        # fully linear layer + dropout
+        x = self.drop(x)
+        x = self.fc1(x)
+        if not self.training:
+            x = torch.nn.functional.log_softmax(x, dim=1)
+        return x
