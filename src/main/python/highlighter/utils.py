@@ -31,6 +31,26 @@ PYTHON3_LANG_NAME: str = 'python3'
 PYTHON3_LEXER_MAX_TOKEN_VAL: int = 100
 PYTHON3_LEXER_NORMALISED_MAX_TOKEN_VAL: int = 68
 
+# CPP
+# ---------------------------------
+CPP_LANG_NAME: str = 'cpp'
+CPP_LANG_NAME_LEXER_MAX_TOKEN_VAL: int = 145
+CPP_LANG_NAME_LEXER_NORMALISED_MAX_TOKEN_VAL: int = -1
+
+
+# JAVASCRIPT
+# ---------------------------------
+JS_LANG_NAME: str = 'javascript'
+JS_LANG_NAME_LEXER_MAX_TOKEN_VAL: int = 127
+JS_LANG_NAME_LEXER_NORMALISED_MAX_TOKEN_VAL: int = -1
+
+
+# CSHARP
+# ---------------------------------
+CS_LANG_NAME: str = 'csharp'
+CS_LANG_NAME_LEXER_MAX_TOKEN_VAL: int = 181
+CS_LANG_NAME_LEXER_NORMALISED_MAX_TOKEN_VAL: int = -1
+
 # Model names.
 LSTMClassifier1 = 'LSTMClassifier1'
 GRUClassifier1 = 'GRUClassifier1'
@@ -51,6 +71,23 @@ SO_PYTHON_MIN: int = 1
 SO_PYTHON_MAX: int = 1341
 SO_PYTHON_MEAN: float = 14.00
 SO_PYTHON_STD: float = 20.39
+
+# TODO:
+SO_CPP_MIN: int = 1
+SO_CPP_MAX: int = 1234
+SO_CPP_MEAN: float = 17.00
+SO_CPP_STD: float = 28.71
+
+SO_JS_MIN: int = 1
+SO_JS_MAX: int = 1157
+SO_JS_MEAN: float = 15.00
+SO_JS_STD: float = 23.23
+
+SO_CS_MIN: int = 1
+SO_CS_MAX: int = 1218
+SO_CS_MEAN: float = 17.00
+SO_CS_STD: float = 26.89
+
 
 # From Kotlin's implementation:
 ANY: (int, str) = (0, 'ANY')
@@ -258,6 +295,14 @@ class Config:
             self.input_dim = KOTLIN_LEXER_MAX_TOKEN_VAL
         elif self.lang_name == PYTHON3_LANG_NAME:
             self.input_dim = PYTHON3_LEXER_MAX_TOKEN_VAL
+        elif self.lang_name == CPP_LANG_NAME:
+            self.input_dim = CPP_LANG_NAME_LEXER_MAX_TOKEN_VAL
+        elif self.lang_name == JS_LANG_NAME:
+            self.input_dim = JS_LANG_NAME_LEXER_MAX_TOKEN_VAL
+        elif self.lang_name == CS_LANG_NAME:
+            self.input_dim = CS_LANG_NAME_LEXER_MAX_TOKEN_VAL
+        else:
+            raise ValueError(f"Unknown language name '{lang_name}'.")
         # '+2' refers to 'EOF' always '-1': all were added +1 before this stage.
         self.input_dim += 2
         #
@@ -373,6 +418,23 @@ class Config:
             LOC_std: float = SO_PYTHON_STD
             LOC_min: int = SO_PYTHON_MIN
             LOC_max: int = SO_PYTHON_MAX
+        elif self.lang_name == CPP_LANG_NAME:
+            LOC_mean: float = SO_CPP_MEAN
+            LOC_std: float = SO_CPP_STD
+            LOC_min: int = SO_CPP_MIN
+            LOC_max: int = SO_CPP_MAX
+        elif self.lang_name == CS_LANG_NAME:
+            LOC_mean: float = SO_CS_MEAN
+            LOC_std: float = SO_CS_STD
+            LOC_min: int = SO_CS_MIN
+            LOC_max: int = SO_CS_MAX
+        elif self.lang_name == JS_LANG_NAME:
+            LOC_mean: float = SO_JS_MEAN
+            LOC_std: float = SO_JS_STD
+            LOC_min: int = SO_JS_MIN
+            LOC_max: int = SO_JS_MAX
+        else:
+            raise ValueError(f"Unknown language '{self.lang_name}'.")
 
         for foldid in range(3):
             jhetas_testing = load_json(self.get_jhetas_testing_path_of_fold(foldid))

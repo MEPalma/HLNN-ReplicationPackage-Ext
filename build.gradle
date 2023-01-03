@@ -59,6 +59,7 @@ task JavaEvaluator(type: JavaExec) {
 
 
 task JavaScriptPreprocessor(type: JavaExec) {
+    maxHeapSize("100096M")
     args findProperty("args").toString().split(" ") ?: ""
     mainClass.set('preprocessor.javascriptpreprocessor.JavaScriptPreprocessorKt')
     classpath = sourceSets.main.runtimeClasspath
@@ -72,7 +73,7 @@ task JavaScriptEvaluator(type: JavaExec) {
 
 task KotlinPreprocessor(type: JavaExec) {
     args findProperty("args").toString().split(" ") ?: ""
-    mainClass.set('preprocessor.kotlinpreprocessor.KotlinPreprocessorKt')
+    mainClass.set('preprocessor.javascriptpreprocessor.JavaScriptPreprocessorKt')
     classpath = sourceSets.main.runtimeClasspath
 }
 
@@ -107,6 +108,7 @@ task CPPEvaluator(type: JavaExec) {
 }
 
 task CSharpPreprocessor(type: JavaExec) {
+    maxHeapSize("100096M")
     args findProperty("args").toString().split(" ") ?: ""
     mainClass.set('preprocessor.csharppreprocessor.CSharpPreprocessorKt')
     classpath = sourceSets.main.runtimeClasspath

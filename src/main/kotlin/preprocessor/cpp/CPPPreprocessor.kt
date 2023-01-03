@@ -20,5 +20,10 @@ class CPPPreprocessor(userArgs: Array<String>) : Preprocessor(
     grammaticalHighlighter = CPPGrammaticalHighlighter(),
 )
 
-fun main(args: Array<String>) =
-    CPPPreprocessor(args).run()
+//fun main(args: Array<String>) =
+//    CPPPreprocessor(args).run()
+
+fun main(args: Array<String>) {
+    print(CPP14Lexer.VOCABULARY.maxTokenType)
+}
+

@@ -1,6 +1,4 @@
-import sys
 import threading
-import time
 import requests
 import json
 import base64
@@ -14,9 +12,9 @@ HEADERS = {'Authorization': 'token ' + API_TOKEN}
 # print(login.json())
 
 
-DUMP_FOLDER = 'python3_dump/'
-LANG = 'Python3'
-FILE_EXTENSION = '.py'
+DUMP_FOLDER = '/'
+LANG = ''
+FILE_EXTENSIONS = []
 NUM_THREADS = 100
 
 # Note: only the first 1000 search results are available.
@@ -100,7 +98,7 @@ def main():
             try:
                 cnts_json = get_json('https://api.github.com/repos/' + repo['full_name'] + '/git/trees/master?recursive=1')
                 for f in cnts_json['tree']:
-                    if f['type'] == 'blob' and f['path'].endswith(FILE_EXTENSION):
+                    if f['type'] == 'blob' and any([f['path'].endswith(ext) for ext in FILE_EXTENSIONS]):
                         files.append({'repo': repo['full_name'], 'path': f['path'], 'url': f['url']})
             except Exception as e:
                 skipped_repos.append({'repo': repo['full_name'], 'error': str(e)})
