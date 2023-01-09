@@ -6,7 +6,8 @@ import math
 import evaluator as evaluator
 
 
-def train_one_epoch_on(inputs: [torch.Tensor], targets: [torch.Tensor], model: torch.nn.Module, loss_function, optimiser):
+def train_one_epoch_on(inputs: [torch.Tensor], targets: [torch.Tensor], model: torch.nn.Module, loss_function,
+                       optimiser):
     acc_loss = 0
     n = len(inputs)
     for i, (x, y) in enumerate(zip(inputs, targets)):
@@ -19,16 +20,20 @@ def train_one_epoch_on(inputs: [torch.Tensor], targets: [torch.Tensor], model: t
         acc_loss += loss.item()
         #
         if i % 100 == 0:
-            print('\rTraining step:',  ('%.2f' % ((i + 1) * 100 / n)) + '%', 'completed. | Accumulated loss:', '%.2f' % acc_loss, end='\033[K')
+            print('\rTraining step:', ('%.2f' % ((i + 1) * 100 / n)) + '%', 'completed. | Accumulated loss:',
+                  '%.2f' % acc_loss, end='\033[K')
     print()
     return acc_loss
 
 
-def test_on(inputs: [torch.Tensor], targets: [torch.Tensor], model: torch.nn.Module, loss_function, is_validation=False):
+def test_on(inputs: [torch.Tensor], targets: [torch.Tensor], model: torch.nn.Module, loss_function, is_validation=False,
+            is_Snip=False):
     msg = 'Validation' if is_validation else 'Testing'
+    if is_Snip:
+        msg = msg + '- Snippets'
     model.eval()
     with torch.no_grad():
-        avg_acc, loss_sum, errs_map, errs_obs, errs_hist, seqs_p =\
+        avg_acc, loss_sum, errs_map, errs_obs, errs_hist, seqs_p = \
             evaluator.acc_of_all(model, inputs, targets, loss_function, msg=msg)
     model.train()
     return {
@@ -53,13 +58,13 @@ def debug_training(config: utils.Config):
         test_inputs, test_targets = config.get_cache_testing_of_fold(fold_num)
         snip_test_inputs, snip_test_targets = config.get_cache_snippets_of_fold(fold_num)
 
-        samples = [100, 50, 10]
+        samples = [5000, 500, 100]
         train_inputs = train_inputs[:samples[0]]
         train_targets = train_targets[:samples[0]]
         val_inputs = val_inputs[:samples[1]]
         val_targets = val_targets[:samples[1]]
         test_inputs = test_inputs[:samples[1]]
-        test_targets= test_targets[:samples[1]]
+        test_targets = test_targets[:samples[1]]
         snip_test_inputs = snip_test_inputs[:samples[2]]
         snip_test_targets = snip_test_targets[:samples[2]]
 
@@ -83,7 +88,7 @@ def debug_training(config: utils.Config):
                 scheduler.step()
         train_losses.append(test_on(train_inputs, train_targets, model, loss_function, is_validation=True))
         test_losses.append(test_on(test_inputs, test_targets, model, loss_function))
-        snippets_losses.append(test_on(snip_test_inputs, snip_test_targets, model, loss_function))
+        snippets_losses.append(test_on(snip_test_inputs, snip_test_targets, model, loss_function, is_Snip=True))
 
         logs[fold_num] = {
             'train_logs': train_losses,
