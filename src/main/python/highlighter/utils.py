@@ -270,8 +270,13 @@ class Config:
             is_seeded: bool = True,
             seed_code: int = 1,
             #
-            device=torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+            device=torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'),
+            # cnn params
+            kernel_size: int = 3,
+            dropout: float = 0.5
     ):
+        self.kernel_size = kernel_size
+        self.dropout = dropout
         self.is_seeded: bool = is_seeded
         self.seed_code: int = seed_code
         if is_seeded:
@@ -334,7 +339,9 @@ class Config:
             str(self.input_dim) + 'id_' + \
             str(self.hidden_dim) + 'hd_' + \
             str(self.hidden_layers) + 'hl_' + \
-            str(self.is_bidirectional) + 'bid'
+            str(self.is_bidirectional) + 'bid' + \
+            str(self.kernel_size) + 'kernel' + \
+            str(self.dropout) + 'dropout'
         #
         runc: str = str(self.run_code)
         taskc: str = str(task_code_of(self.task))
@@ -546,31 +553,15 @@ class Config:
             )
         elif self.model_name == CNNClassifier1:
             print('Task max val+1: ', (self.task_max_val + 1))
-            model = cnn.CNNClassifier2(
+            model = cnn.CNNClassifier1(
+                embedding_dim=self.embs_dim,
                 vocab_size=self.input_dim,
-                feature_size=self.embs_dim,
-                kernel_size=3,
-                layers=self.hidden_layers,
-                num_classes=self.task_max_val + 1
-
-                # Shared params
-                # input_dim=self.input_dim,
-                # emb_dim=self.embs_dim,
-                # hid_dim=self.hidden_dim,
-                # enc_layers=self.hidden_layers,
-                # tagset_size=self.task_max_val +1
-                # max_length=300,  # ToDo: add param to self
-                # # Encoder params
-                # input_dim=self.input_dim,
-                # enc_layers=self.hidden_layers,
-                # enc_kernel_size=3,  # ToDo: add param to self
-                # enc_dropout=0.25,
-                # # Decoder params
-                # output_dim=self.task_max_val + 1,
-                # dec_layers=self.hidden_layers,
-                # dec_kernel_size=3,
-                # dec_dropout=0.25,  # ToDo add param to self
-                # trg_pad_idx=0  # ToDo: add param to self - Padding token index (from vocab)
+                hidden_dim=self.hidden_dim,
+                num_layers=self.hidden_layers,
+                kernel_size=self.kernel_size,
+                num_classes=self.task_max_val + 1,
+                # stride=self.stride,
+                dropout=self.dropout
             )
         else:
             raise ValueError(self.model_name + ' is an invalid model name.')
@@ -588,9 +579,6 @@ class Config:
             step_size=self.lr_step_size,
             gamma=self.lr_gamma,
             verbose=True)
-        #if self.model_name == CNNClassifier1:
-        #    loss_func = torch.nn.CrossEntropyLoss(ignore_index=self.padding_token)
-        #else:
         loss_func = torch.nn.CrossEntropyLoss()
         return model, optimiser, scheduler, loss_func
 
