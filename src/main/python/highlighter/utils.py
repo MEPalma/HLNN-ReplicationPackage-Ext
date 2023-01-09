@@ -41,7 +41,7 @@ CPP_LANG_NAME_LEXER_NORMALISED_MAX_TOKEN_VAL: int = -1
 # JAVASCRIPT
 # ---------------------------------
 JS_LANG_NAME: str = 'javascript'
-JS_LANG_NAME_LEXER_MAX_TOKEN_VAL: int = 127
+JS_LANG_NAME_LEXER_MAX_TOKEN_VAL: int = 128
 JS_LANG_NAME_LEXER_NORMALISED_MAX_TOKEN_VAL: int = -1
 
 
@@ -71,18 +71,17 @@ SO_PYTHON_MIN: int = 1
 SO_PYTHON_MAX: int = 1341
 SO_PYTHON_MEAN: float = 14.00
 SO_PYTHON_STD: float = 20.39
-
-# TODO:
+#
 SO_CPP_MIN: int = 1
 SO_CPP_MAX: int = 1234
 SO_CPP_MEAN: float = 17.00
 SO_CPP_STD: float = 28.71
-
+#
 SO_JS_MIN: int = 1
 SO_JS_MAX: int = 1157
 SO_JS_MEAN: float = 15.00
 SO_JS_STD: float = 23.23
-
+#
 SO_CS_MIN: int = 1
 SO_CS_MAX: int = 1218
 SO_CS_MEAN: float = 17.00
