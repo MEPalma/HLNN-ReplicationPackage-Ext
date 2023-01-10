@@ -14,6 +14,7 @@ import pygments_utils as pygments_utils
 
 
 def training_seq():
+
     all_configs = list(itertools.product(
         # lang_names:
         [utils.JAVA_LANG_NAME],
@@ -22,17 +23,17 @@ def training_seq():
         # model_name:
         [utils.CNNClassifier1],
         # embs_dim:
-        [128, 64, 256, 512, 32],
+        [128],#, 64, 256, 512, 32],
         # hidden_dim:
-        [256, 128, 64, 32, 16, 512],
+        [256],#, 128, 64, 32, 16, 512],
         # hidden_layers:
-        [2, 3, 4],
+        [2],#, 3, 4],
         # is_bidirectional
         [False],
         # kernel size
-        [5, 3, 7],
+        [5],#, 3, 7],
         # dropout
-        [0.5, 0.3, 0.4]
+        [0.4]#, 0.3, 0.5]
     ))
     tot_num_configs = len(all_configs)
 

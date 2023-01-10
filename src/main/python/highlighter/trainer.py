@@ -58,15 +58,15 @@ def debug_training(config: utils.Config):
         test_inputs, test_targets = config.get_cache_testing_of_fold(fold_num)
         snip_test_inputs, snip_test_targets = config.get_cache_snippets_of_fold(fold_num)
 
-        samples = [5000, 500, 100]
-        train_inputs = train_inputs[:samples[0]]
-        train_targets = train_targets[:samples[0]]
-        val_inputs = val_inputs[:samples[1]]
-        val_targets = val_targets[:samples[1]]
-        test_inputs = test_inputs[:samples[1]]
-        test_targets = test_targets[:samples[1]]
-        snip_test_inputs = snip_test_inputs[:samples[2]]
-        snip_test_targets = snip_test_targets[:samples[2]]
+        # samples = [5000, 500, 100]
+        # train_inputs = train_inputs[:samples[0]]
+        # train_targets = train_targets[:samples[0]]
+        # val_inputs = val_inputs[:samples[1]]
+        # val_targets = val_targets[:samples[1]]
+        # test_inputs = test_inputs[:samples[1]]
+        # test_targets = test_targets[:samples[1]]
+        # snip_test_inputs = snip_test_inputs[:samples[2]]
+        # snip_test_targets = snip_test_targets[:samples[2]]
 
         model, optimiser, scheduler, loss_function = config.new_model_training_session()
 
