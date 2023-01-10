@@ -21,5 +21,4 @@ class JavaEvaluator(
 )
 
 fun main(args: Array<String>) =
-    JavaEvaluator(arrayOf("fileToHTMLModel","testFiles/test.java","../saved_model_losses/java_1_66_CNNClassifier1_128embs_109id_256hd_2hl_Falsebid5kernel0.4dropout.json")).run()
-//        JavaEvaluator(arrayOf("fileToHTMLBrute","testFiles/test.java")).run()
+    JavaEvaluator(args).run()
