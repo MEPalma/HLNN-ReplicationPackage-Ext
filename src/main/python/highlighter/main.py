@@ -14,21 +14,26 @@ import pygments_utils as pygments_utils
 
 
 def training_seq():
+
     all_configs = list(itertools.product(
         # lang_names:
-        [utils.PYTHON3_LANG_NAME],
+        [utils.JAVA_LANG_NAME],
         # task:
-        [utils.TASK_L_D_I_A, utils.TASK_L_D_I, utils.TASK_L_D, utils.TASK_L_I],
+        [utils.TASK_L_D_I_A],  # , utils.TASK_L_D_I, utils.TASK_L_D, utils.TASK_L_I],
         # model_name:
-        [utils.RNNClassifier1],
+        [utils.CNNClassifier1],
         # embs_dim:
-        [128],
+        [128],#, 64, 256, 512, 32],
         # hidden_dim:
-        [16, 32],
+        [256],#, 128, 64, 32, 16, 512],
         # hidden_layers:
-        [1],
+        [2],#, 3, 4],
         # is_bidirectional
-        [False, True]
+        [False],
+        # kernel size
+        [5],#, 3, 7],
+        # dropout
+        [0.4]#, 0.3, 0.5]
     ))
     tot_num_configs = len(all_configs)
 
@@ -36,7 +41,7 @@ def training_seq():
         print('On config', (i + 1), 'of', tot_num_configs)
         print(config)
 
-        lang_name, task, model_name, embs_dim, hidden_dim, hidden_layers, is_bid = config
+        lang_name, task, model_name, embs_dim, hidden_dim, hidden_layers, is_bid, kernel_size, dropout = config
         config = utils.Config(
             lang_name=lang_name,
             run_code=1,
@@ -49,10 +54,12 @@ def training_seq():
             is_bidirectional=is_bid,
             #
             lr_step_size=2,
-            max_epochs=4,
+            max_epochs=2,
             #
             is_load_module_from_path=False,
             is_save_module_to_path=True,
+            kernel_size=kernel_size,
+            dropout=dropout
         )
         print(f"Using device {config.device}")
         if not os.path.isfile(config.session_loss_evo_path):
@@ -62,7 +69,6 @@ def training_seq():
 
 
 def use(log_path: str, model_index: int = 0):
-
     # Load config of trained model.
     log = utils.load_json(log_path)
 

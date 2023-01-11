@@ -107,3 +107,15 @@ $RECYCLE.BIN/
 out.html
 testFiles/
 src/main/resources/
+
+# bak files
+*.bak
+src/main/python/saved_models/bakCnn/
+src/main/python/saved_model_losses/bakCnn/
+src/main/python/saved_model_losses/cnn/
+src/main/python/saved_model_losses/cnnBak/
+src/main/python/saved_model_losses/extractAvgAcc.sh
+src/main/python/saved_model_losses/output.out
+src/main/python/saved_models/cnn/
+src/main/python/saved_models/cnnBak/
+
