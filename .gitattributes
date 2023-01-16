@@ -357,3 +357,6 @@ src/main/python/saved_model_losses/cpp_1_37_CNNClassifier1_128embs_147id_128hd_2
 src/main/python/saved_model_losses/csharp_1_37_CNNClassifier1_128embs_183id_128hd_2hl_Falsebid5kernel0.4dropout.json filter=lfs diff=lfs merge=lfs -text
 src/main/python/saved_model_losses/cpp_1_66_CNNClassifier1_128embs_147id_128hd_2hl_Falsebid5kernel0.4dropout.json filter=lfs diff=lfs merge=lfs -text
 src/main/python/saved_model_losses/csharp_1_55_CNNClassifier1_128embs_183id_128hd_2hl_Falsebid5kernel0.4dropout.json filter=lfs diff=lfs merge=lfs -text
+src/main/resources/cpp/perFileTimeBrute.json filter=lfs diff=lfs merge=lfs -text
+src/main/resources/csharo/perFileTimeBrute.json filter=lfs diff=lfs merge=lfs -text
+src/main/resources/csharp/perFileTimeBrute.json filter=lfs diff=lfs merge=lfs -text
