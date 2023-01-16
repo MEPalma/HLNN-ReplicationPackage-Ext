@@ -22,7 +22,7 @@ def train_one_epoch_on(inputs: [torch.Tensor], targets: [torch.Tensor], model: t
         optimiser.step()
         acc_loss += loss.item()
         #
-        if i % 100 == 0:
+        if i % 1000 == 0:
             print('\rTraining step:', ('%.2f' % ((i + 1) * 100 / n)) + '%', 'completed. | Accumulated loss:',
                   '%.2f' % acc_loss, end='\033[K')
     print()

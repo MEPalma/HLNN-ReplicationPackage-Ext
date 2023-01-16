@@ -41,7 +41,7 @@ def acc_of_all(model: torch.nn.Module, seqs_in: [torch.Tensor], seqs_t: [torch.T
         #
         seqs_p.append(seq_p)
         #
-        if i % 100 == 0:
+        if i % 1000 == 0:
             print('\r' + msg + ' | Progress:', ('%.2f' % ((i + 1) * 100 / N)) + '%', '| Loss:', loss_sum, '| Acc:', '%.2f' % ((accs_sum / (i + 1)) * 100) + '%', end='')
     print()
 
