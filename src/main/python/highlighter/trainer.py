@@ -8,12 +8,12 @@ import evaluator as evaluator
 
 def train_one_epoch_on(inputs: [torch.Tensor], targets: [torch.Tensor], model: torch.nn.Module, loss_function,
                        optimiser, device):
-    inputs = inputs.detach().to(device)
-    targets = targets.detach().to(device)
-
     acc_loss = 0
     n = len(inputs)
     for i, (x, y) in enumerate(zip(inputs, targets)):
+        x = x.detach().to(device)
+        y = y.detach().to(device)
+
         model.zero_grad()
         optimiser.zero_grad()
         t = model(x)
@@ -31,8 +31,8 @@ def train_one_epoch_on(inputs: [torch.Tensor], targets: [torch.Tensor], model: t
 
 def test_on(inputs: [torch.Tensor], targets: [torch.Tensor], model: torch.nn.Module, loss_function, is_validation=False,
             is_snip=False, device="cpu"):
-    inputs = inputs.detach().to(device)
-    targets = targets.detach().to(device)
+    inputs = [inp.detach().to(device) for inp in inputs]
+    targets = [trg.detach().to(device) for trg in targets]
 
     msg = 'Validation' if is_validation else 'Testing'
     if is_snip:
