@@ -17,15 +17,15 @@ def training_seq():
 
     all_configs = list(itertools.product(
         # lang_names:
-        [utils.JAVA_LANG_NAME],
+        [utils.CPP_LANG_NAME, utils.CS_LANG_NAME, utils.JS_LANG_NAME],
         # task:
-        [utils.TASK_L_D_I_A],  # , utils.TASK_L_D_I, utils.TASK_L_D, utils.TASK_L_I],
+        [utils.TASK_L_D_I_A, utils.TASK_L_D_I, utils.TASK_L_D, utils.TASK_L_I],
         # model_name:
         [utils.CNNClassifier1],
         # embs_dim:
         [128],#, 64, 256, 512, 32],
         # hidden_dim:
-        [256],#, 128, 64, 32, 16, 512],
+        [128],#, 128, 64, 32, 16, 512],
         # hidden_layers:
         [2],#, 3, 4],
         # is_bidirectional
