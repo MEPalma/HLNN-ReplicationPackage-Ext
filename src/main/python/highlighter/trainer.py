@@ -78,8 +78,6 @@ def debug_training(config: utils.Config):
         test_losses.append(test_on(test_inputs, test_targets, model, loss_function, device=config.device))
         snippets_losses.append(test_on(snip_test_inputs, snip_test_targets, model, loss_function, device=config.device))
         for e in range(config.max_epochs):
-            train_inputs.to(config.device)
-            train_targets.to(config.device)
             train_losses.append(
                 train_one_epoch_on(train_inputs, train_targets, model, loss_function, optimiser, config.device)
             )
