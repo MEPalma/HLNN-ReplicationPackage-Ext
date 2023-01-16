@@ -18,7 +18,6 @@ import random
 JAVA_LANG_NAME: str = 'java'
 JAVA_LEXER_MAX_TOKEN_VAL: int = 107
 JAVA_LEXER_NORMALISED_MAX_TOKEN_VAL: int = 65
-# ---------------------------------
 #
 # KOTLIN
 # ---------------------------------
@@ -32,29 +31,18 @@ PYTHON3_LANG_NAME: str = 'python3'
 PYTHON3_LEXER_MAX_TOKEN_VAL: int = 100
 PYTHON3_LEXER_NORMALISED_MAX_TOKEN_VAL: int = 68
 #
-# JAVASCRIPT
-# ---------------------------------
-#
-# C++
-# ---------------------------------
-#
-# C#
-# ---------------------------------
-
 # CPP
 # ---------------------------------
 CPP_LANG_NAME: str = 'cpp'
 CPP_LANG_NAME_LEXER_MAX_TOKEN_VAL: int = 145
 CPP_LANG_NAME_LEXER_NORMALISED_MAX_TOKEN_VAL: int = -1
-
-
+#
 # JAVASCRIPT
 # ---------------------------------
 JS_LANG_NAME: str = 'javascript'
 JS_LANG_NAME_LEXER_MAX_TOKEN_VAL: int = 128
 JS_LANG_NAME_LEXER_NORMALISED_MAX_TOKEN_VAL: int = -1
-
-
+#
 # CSHARP
 # ---------------------------------
 CS_LANG_NAME: str = 'csharp'
@@ -117,15 +105,15 @@ FIELD_IDENTIFIER: (int, str) = (10, 'FIELD_IDENTIFIER')
 #
 ANNOTATION_DECLARATOR: (int, str) = (11, 'ANNOTATION_DECLARATOR')
 
-__TASK_L__: [(int, str)] = (ANY, KEYWORD, LITERAL, CHAR_STRING_LITERAL, COMMENT)
-__TASK_D__: [(int, str)] = (CLASS_DECLARATOR, FUNCTION_DECLARATOR, VARIABLE_DECLARATOR)
-__TASK_I__: [(int, str)] = (TYPE_IDENTIFIER, FUNCTION_IDENTIFIER, FIELD_IDENTIFIER)
-__TASK_A__: [(int, str)] = (ANNOTATION_DECLARATOR,)
+_TASK_L: [(int, str)] = (ANY, KEYWORD, LITERAL, CHAR_STRING_LITERAL, COMMENT)
+_TASK_D: [(int, str)] = (CLASS_DECLARATOR, FUNCTION_DECLARATOR, VARIABLE_DECLARATOR)
+_TASK_I: [(int, str)] = (TYPE_IDENTIFIER, FUNCTION_IDENTIFIER, FIELD_IDENTIFIER)
+_TASK_A: [(int, str)] = (ANNOTATION_DECLARATOR,)
 
-TASK_L_D: [(int, str)] = (*__TASK_L__, *__TASK_D__)
-TASK_L_I: [(int, str)] = (*__TASK_L__, *__TASK_I__)
-TASK_L_D_I: [(int, str)] = (*__TASK_L__, *__TASK_D__, *__TASK_I__)
-TASK_L_D_I_A: [(int, str)] = (*__TASK_L__, *__TASK_D__, *__TASK_I__, *__TASK_A__)
+TASK_L_D: [(int, str)] = (*_TASK_L, *_TASK_D)
+TASK_L_I: [(int, str)] = (*_TASK_L, *_TASK_I)
+TASK_L_D_I: [(int, str)] = (*_TASK_L, *_TASK_D, *_TASK_I)
+TASK_L_D_I_A: [(int, str)] = (*_TASK_L, *_TASK_D, *_TASK_I, *_TASK_A)
 
 NAME_MAP: [(int, str)] = {i: n for i, n in TASK_L_D_I_A}
 
@@ -191,7 +179,7 @@ def dump_json(filename: str, obj):
         json.dump(obj, f)
 
 
-def __jhetas_to_cache__(source_jhetas_filepath: str, destination_jhetas_filepath: str):
+def _jhetas_to_cache(source_jhetas_filepath: str, destination_jhetas_filepath: str):
     jhetas = load_json(source_jhetas_filepath)
 
     input_seqs = []
@@ -210,7 +198,7 @@ def __jhetas_to_cache__(source_jhetas_filepath: str, destination_jhetas_filepath
     to_cache(data, destination_jhetas_filepath)
 
 
-def __lookup_indexes_of_source__(source: str):
+def _lookup_indexes_of_source(source: str):
     lookup_indexes = {}
     tmp_index = 0
     for line_index, line in enumerate(source.split('\n')):
@@ -221,7 +209,7 @@ def __lookup_indexes_of_source__(source: str):
     return lookup_indexes
 
 
-def __remap_hetas_to_start__(hetas, line_start_index):
+def _remap_hetas_to_start(hetas, line_start_index):
     offset = line_start_index
     for heta in hetas:
         heta['eta']['startIndex'] -= offset
@@ -229,7 +217,7 @@ def __remap_hetas_to_start__(hetas, line_start_index):
     return hetas
 
 
-def __sample_lines_as__(lookup_indexes, tlln, mloc, stdloc, minloc, maxloc):
+def _sample_lines_as(lookup_indexes, tlln, mloc, stdloc, minloc, maxloc):
     res = None
     # Sample gaussian random number of lines of its kind.
     num_loc = round(np.random.normal(mloc, stdloc))
@@ -391,16 +379,16 @@ class Config:
         return f"{self.jhetas_folds_dir}fold{fold_num}_snippets_class_ids.json"
 
     def get_cache_training_of_fold(self, fold_num: int) -> ([torch.Tensor], [torch.Tensor]):
-        return self.__cache_adapt_and_push_to_device__(from_cache(self.get_cache_training_path_of_fold(fold_num)))
+        return self._cache_adapt(from_cache(self.get_cache_training_path_of_fold(fold_num)))
 
     def get_cache_validation_of_fold(self, fold_num: int) -> ([torch.Tensor], [torch.Tensor]):
-        return self.__cache_adapt_and_push_to_device__(from_cache(self.get_cache_validation_path_of_fold(fold_num)))
+        return self._cache_adapt(from_cache(self.get_cache_validation_path_of_fold(fold_num)))
 
     def get_cache_testing_of_fold(self, fold_num: int) -> ([torch.Tensor], [torch.Tensor]):
-        return self.__cache_adapt_and_push_to_device__(from_cache(self.get_cache_testing_path_of_fold(fold_num)))
+        return self._cache_adapt(from_cache(self.get_cache_testing_path_of_fold(fold_num)))
 
     def get_cache_snippets_of_fold(self, fold_num: int) -> ([torch.Tensor], [torch.Tensor]):
-        return self.__cache_adapt_and_push_to_device__(from_cache(self.get_cache_snippets_path_of_fold(fold_num)))
+        return self._cache_adapt(from_cache(self.get_cache_snippets_path_of_fold(fold_num)))
 
     def get_snippets_class_ids_of_fold(self, fold_num: int):
         return load_json(self.get_snippets_class_ids_path_of_fold(fold_num))
@@ -470,11 +458,11 @@ class Config:
                 hetas = jh['hetas']
                 tlln = source.count('\n') - 1
                 if not i in per_file_lookup_indexes.keys():
-                    per_file_lookup_indexes[i] = __lookup_indexes_of_source__(source)
+                    per_file_lookup_indexes[i] = _lookup_indexes_of_source(source)
                 lookup_indexes = per_file_lookup_indexes[i]
 
                 # Sample snippet.
-                maybe_start_end = __sample_lines_as__(lookup_indexes, tlln, LOC_mean, LOC_std, LOC_min, LOC_max)
+                maybe_start_end = _sample_lines_as(lookup_indexes, tlln, LOC_mean, LOC_std, LOC_min, LOC_max)
                 if maybe_start_end is not None:
                     (char_start_index, char_stop_index) = maybe_start_end
                     #
@@ -494,7 +482,7 @@ class Config:
                     if len(new_hetas) > 0:
                         jh_cp = copy.deepcopy(jh)
                         jh_cp['source']['source'] = source[char_start_index:(char_stop_index + 1)]
-                        jh_cp['hetas'] = __remap_hetas_to_start__(new_hetas, char_start_index)
+                        jh_cp['hetas'] = _remap_hetas_to_start(new_hetas, char_start_index)
                         #
                         this_fold_snips.append(jh_cp)
                         print('\rFound', len(this_fold_snips), 'snippets', end='')
@@ -506,19 +494,19 @@ class Config:
 
     def generate_cache(self):
         for foldid in range(3):
-            __jhetas_to_cache__(
+            _jhetas_to_cache(
                 self.get_jhetas_training_path_of_fold(foldid),
                 self.get_cache_training_path_of_fold(foldid)
             )
-            __jhetas_to_cache__(
+            _jhetas_to_cache(
                 self.get_jhetas_validation_path_of_fold(foldid),
                 self.get_cache_validation_path_of_fold(foldid)
             )
-            __jhetas_to_cache__(
+            _jhetas_to_cache(
                 self.get_jhetas_testing_path_of_fold(foldid),
                 self.get_cache_testing_path_of_fold(foldid)
             )
-            __jhetas_to_cache__(
+            _jhetas_to_cache(
                 self.get_jhetas_snippets_path_of_fold(foldid),
                 self.get_cache_snippets_path_of_fold(foldid)
             )
@@ -586,18 +574,18 @@ class Config:
         if self.is_seeded:
             t.manual_seed(self.seed_code)
 
-    def __model_path_of_iter__(self, iter: int):
+    def _model_path_of_iter(self, iter: int):
         return self.module_path.replace('.pt', '_' + str(iter) + '.pt')
 
     def save_model_iter(self, model: torch.nn.Module, iter: int):
-        torch.save(model.state_dict(), self.__model_path_of_iter__(iter))
+        torch.save(model.state_dict(), self._model_path_of_iter(iter))
 
     def get_model_of_iter(self, iter: int) -> torch.nn.Module:
         org_module_path = self.module_path
         org_is_load_module_from_path = self.is_load_module_from_path
         #
         ##
-        self.module_path = self.__model_path_of_iter__(iter)
+        self.module_path = self._model_path_of_iter(iter)
         self.is_load_module_from_path = True
         #
         model = self.new_model()
@@ -608,7 +596,13 @@ class Config:
         #
         return model
 
-    def __cache_adapt_and_push_to_device__(self, cache: ([torch.Tensor], [torch.Tensor])) -> (
+    def _cache_adapt(self, cache: ([torch.Tensor], [torch.Tensor])) -> (
+            [torch.Tensor], [torch.Tensor]):
+        for i in range(len(cache[0])):
+            cache[1][i] = as_adapted_target_of(cache[1][i], self.task_adapter)
+        return cache
+
+    def _cache_adapt_and_push_to_device(self, cache: ([torch.Tensor], [torch.Tensor])) -> (
             [torch.Tensor], [torch.Tensor]):
         for i in range(len(cache[0])):
             cache[0][i] = cache[0][i].to(self.device)

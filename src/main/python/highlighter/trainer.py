@@ -7,7 +7,10 @@ import evaluator as evaluator
 
 
 def train_one_epoch_on(inputs: [torch.Tensor], targets: [torch.Tensor], model: torch.nn.Module, loss_function,
-                       optimiser):
+                       optimiser, device):
+    inputs = inputs.detach().to(device)
+    targets = targets.detach().to(device)
+
     acc_loss = 0
     n = len(inputs)
     for i, (x, y) in enumerate(zip(inputs, targets)):
@@ -27,9 +30,12 @@ def train_one_epoch_on(inputs: [torch.Tensor], targets: [torch.Tensor], model: t
 
 
 def test_on(inputs: [torch.Tensor], targets: [torch.Tensor], model: torch.nn.Module, loss_function, is_validation=False,
-            is_Snip=False):
+            is_snip=False, device="cpu"):
+    inputs = inputs.detach().to(device)
+    targets = targets.detach().to(device)
+
     msg = 'Validation' if is_validation else 'Testing'
-    if is_Snip:
+    if is_snip:
         msg = msg + '- Snippets'
     model.eval()
     with torch.no_grad():
@@ -58,16 +64,6 @@ def debug_training(config: utils.Config):
         test_inputs, test_targets = config.get_cache_testing_of_fold(fold_num)
         snip_test_inputs, snip_test_targets = config.get_cache_snippets_of_fold(fold_num)
 
-        # samples = [5000, 500, 100]
-        # train_inputs = train_inputs[:samples[0]]
-        # train_targets = train_targets[:samples[0]]
-        # val_inputs = val_inputs[:samples[1]]
-        # val_targets = val_targets[:samples[1]]
-        # test_inputs = test_inputs[:samples[1]]
-        # test_targets = test_targets[:samples[1]]
-        # snip_test_inputs = snip_test_inputs[:samples[2]]
-        # snip_test_targets = snip_test_targets[:samples[2]]
-
         model, optimiser, scheduler, loss_function = config.new_model_training_session()
 
         print('Training size:', len(train_inputs), 'Validation size:', len(val_inputs), 'Test size:', len(test_inputs))
@@ -82,13 +78,21 @@ def debug_training(config: utils.Config):
         test_losses.append(test_on(test_inputs, test_targets, model, loss_function))
         snippets_losses.append(test_on(snip_test_inputs, snip_test_targets, model, loss_function))
         for e in range(config.max_epochs):
-            train_losses.append(train_one_epoch_on(train_inputs, train_targets, model, loss_function, optimiser))
-            val_losses.append(test_on(val_inputs, val_targets, model, loss_function, is_validation=True))
+            train_inputs.to(config.device)
+            train_targets.to(config.device)
+            train_losses.append(
+                train_one_epoch_on(train_inputs, train_targets, model, loss_function, optimiser, config.device)
+            )
+
+            val_losses.append(
+                test_on(val_inputs, val_targets, model, loss_function, is_validation=True, device=config.device)
+            )
             if e < config.max_epochs - 1:
                 scheduler.step()
-        train_losses.append(test_on(train_inputs, train_targets, model, loss_function, is_validation=True))
-        test_losses.append(test_on(test_inputs, test_targets, model, loss_function))
-        snippets_losses.append(test_on(snip_test_inputs, snip_test_targets, model, loss_function, is_Snip=True))
+
+        train_losses.append(test_on(train_inputs, train_targets, model, loss_function, is_validation=True, device=config.device))
+        test_losses.append(test_on(test_inputs, test_targets, model, loss_function, config.device))
+        snippets_losses.append(test_on(snip_test_inputs, snip_test_targets, model, loss_function, is_snip=True, device=config.device))
 
         logs[fold_num] = {
             'train_logs': train_losses,
