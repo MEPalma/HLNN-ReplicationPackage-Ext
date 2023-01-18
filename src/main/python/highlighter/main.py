@@ -25,15 +25,15 @@ def training_seq():
         # embs_dim:
         [128],#, 64, 256, 512, 32],
         # hidden_dim:
-        [128],#, 128, 64, 32, 16, 512],
+        [64],#, 128, 64, 32, 16, 512],
         # hidden_layers:
         [2],#, 3, 4],
         # is_bidirectional
         [False],
         # kernel size
-        [5],#, 3, 7],
+        [3],#, 3, 7],
         # dropout
-        [0.4]#, 0.3, 0.5]
+        [0.2]#, 0.3, 0.5]
     ))
     tot_num_configs = len(all_configs)
 

@@ -3,6 +3,7 @@ package evaluator
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import common.*
+import common.ETAMarshaller.Companion.tryETAFromJSON
 import common.JSONSourceMarshaller.Companion.sourceToMD5FileId
 import common.JSONSourceMarshaller.Companion.tryJSONHighlightedSourceFromJSON
 import common.PygmentSol.Companion.toPygmentSols
@@ -20,6 +21,7 @@ import java.awt.GridLayout
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import java.io.*
+import java.lang.Exception
 import java.util.*
 import javax.swing.JFrame
 import javax.swing.JPanel
@@ -294,38 +296,55 @@ abstract class Evaluator(
     private fun perFileTimeBrute(repeats: Int) {
         val jhetasFilepath = "$oracleFileSourcesPath/oracle/jhetas_clean.json"
         var i = 1
-        File("$logOutputFilePath/perFileTimeBrute.json").let { telemetries_file ->
-            telemetries_file.writeText("[\n")
+        val jacksonObjectMapper = jacksonObjectMapper()
+        val runSources = HashSet<String>()
+        File("$logOutputFilePath/perFileTimeBrute.json").let { telemetriesFile ->
+
+            telemetriesFile.forEachLine { line ->
+                try {
+                    jacksonObjectMapper.readValue<FileTimeItem>(line).let { runSources.add(it.fileId) }
+                } catch (ex: Exception) {
+                    // ignore.
+                }
+            }
+
+            if (runSources.size == 0)
+                telemetriesFile.writeText("[\n")
+
             File(jhetasFilepath).bufferedReader().forEachLine { line ->
                 line.tryJSONHighlightedSourceFromJSON()?.let { jheta ->
                     if (i % 100 == 0)
                         print("\rOn JHETA number $i")
-                    //
+
                     val source = jheta.source.source
-                    if (source.isNotEmpty()) {
+                    val fileId = source.sourceToMD5FileId()
+
+                    if (source.isNotEmpty() and !runSources.contains(fileId)) {
+                        runSources.add(fileId)
+
                         val nanoseconds = mutableListOf<Long>()
                         repeat(repeats) {
                             nanoseconds.add(runBruteAndGetNanos(source))
                         }
-                        //
+
                         if (i > 1)
-                            telemetries_file.appendText(",\n")
-                        telemetries_file.appendText(
-                            jacksonObjectMapper().writeValueAsString(
+                            telemetriesFile.appendText(",\n")
+                        telemetriesFile.appendText(
+                            jacksonObjectMapper.writeValueAsString(
                                 FileTimeItem(
                                     source.sourceToMD5FileId(),
                                     nanoseconds
                                 )
                             )
                         )
-                        telemetries_file.appendText("\n")
+                        telemetriesFile.appendText("\n")
                     }
                     //
                     ++i
                 }
                 System.gc()
             }
-            telemetries_file.appendText("]")
+            telemetriesFile.appendText("]")
         }
     }
 
