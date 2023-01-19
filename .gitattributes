@@ -362,3 +362,4 @@ src/main/resources/csharo/perFileTimeBrute.json filter=lfs diff=lfs merge=lfs -t
 src/main/resources/csharp/perFileTimeBrute.json filter=lfs diff=lfs merge=lfs -text
 src/resources/cpp/perFileTimeBrute.json filter=lfs diff=lfs merge=lfs -text
 src/resources/csharp/perFileTimeBrute.json filter=lfs diff=lfs merge=lfs -text
+src/resources/javascript/perFileTimeBrute.json filter=lfs diff=lfs merge=lfs -text
