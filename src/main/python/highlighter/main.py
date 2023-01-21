@@ -6,7 +6,7 @@ import time
 import os.path
 #
 from pygments import highlight
-from pygments.lexers import Python3Lexer, JavaLexer, KotlinLexer
+from pygments.lexers import Python3Lexer, JavaLexer, KotlinLexer, JavascriptLexer, CSharpLexer, CppLexer
 #
 import utils as utils
 import trainer as trainer
@@ -117,6 +117,15 @@ def usepygments(lang: str):
     elif lang == 'python3':
         lang_lexer = Python3Lexer()
         bindings = pygments_utils.PYTHON3_ORACLE_BINDINGS
+    elif lang == 'javascript':
+        lang_lexer = JavascriptLexer()
+        bindings = pygments_utils.JS_ORACLE_BINDINGS
+    elif lang == 'csharp':
+        lang_lexer = CSharpLexer()
+        bindings = pygments_utils.CS_ORACLE_BINDINGS
+    elif lang == 'cpp':
+        lang_lexer = CppLexer()
+        bindings = pygments_utils.CPP_ORACLE_BINDINGS
     else:
         raise ValueError(lang + 'is not a valid language')
 
