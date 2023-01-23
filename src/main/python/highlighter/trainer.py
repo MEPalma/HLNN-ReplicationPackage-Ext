@@ -21,6 +21,10 @@ def train_one_epoch_on(inputs: [torch.Tensor], targets: [torch.Tensor], model: t
         loss.backward()
         optimiser.step()
         acc_loss += loss.item()
+
+        del x
+        del y
+
         #
         if i % 1000 == 0:
             print('\rTraining step:', ('%.2f' % ((i + 1) * 100 / n)) + '%', 'completed. | Accumulated loss:',
@@ -31,8 +35,8 @@ def train_one_epoch_on(inputs: [torch.Tensor], targets: [torch.Tensor], model: t
 
 def test_on(inputs: [torch.Tensor], targets: [torch.Tensor], model: torch.nn.Module, loss_function, is_validation=False,
             is_snip=False, device="cpu"):
-    inputs_dev = [inp.detach().to(device) for inp in inputs]
-    targets_dev = [trg.detach().to(device) for trg in targets]
+    inputs_dev = list(map(lambda inp: inp.detach().to(device), inputs))
+    targets_dev = list(map(lambda trg: trg.detach().to(device), targets))
 
     msg = 'Validation' if is_validation else 'Testing'
     if is_snip:
@@ -41,6 +45,10 @@ def test_on(inputs: [torch.Tensor], targets: [torch.Tensor], model: torch.nn.Mod
     with torch.no_grad():
         avg_acc, loss_sum, errs_map, errs_obs, errs_hist, seqs_p = \
             evaluator.acc_of_all(model, inputs_dev, targets_dev, loss_function, msg=msg)
+
+    del inputs_dev
+    del targets_dev
+
     model.train()
     return {
         'avg_acc': avg_acc,
@@ -89,7 +97,7 @@ def debug_training(config: utils.Config):
                 scheduler.step()
 
         train_losses.append(test_on(train_inputs, train_targets, model, loss_function, is_validation=True, device=config.device))
-        test_losses.append(test_on(test_inputs, test_targets, model, loss_function, config.device))
+        test_losses.append(test_on(test_inputs, test_targets, model, loss_function, device=config.device))
         snippets_losses.append(test_on(snip_test_inputs, snip_test_targets, model, loss_function, is_snip=True, device=config.device))
 
         logs[fold_num] = {
