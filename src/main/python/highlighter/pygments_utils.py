@@ -196,6 +196,8 @@ _TO_ORACLE_BASE_BINDINGS: Final[dict[str, int]] = {
     "Token.Comment.Multiline":                  _COMMENT,
     # Token type for preprocessor comments (also <?php/<% constructs).
     "Token.Comment.Preproc":                    _COMMENT,
+    # Token type for preprocessor comments (also <?php/<% constructs).
+    "Token.Comment.PreprocFile":                _COMMENT,
     # Token type for comments that end at the end of a line (e.g. # foo).
     "Token.Comment.Single":                     _COMMENT,
     # Special data in comments. For example code tags, author and license information, etc.

@@ -620,3 +620,4 @@ src/main/python/saved_model_losses/javascript_1_66_CNNClassifier1_32embs_130id_3
 src/main/python/saved_model_losses/cpp_1_28_CNNClassifier1_32embs_147id_32hd_0hl_Falsebid3kernel0.3dropout.json filter=lfs diff=lfs merge=lfs -text
 src/main/python/saved_model_losses/csharp_1_28_CNNClassifier1_32embs_183id_32hd_0hl_Falsebid3kernel0.3dropout.json filter=lfs diff=lfs merge=lfs -text
 src/main/python/saved_model_losses/javascript_1_28_CNNClassifier1_32embs_130id_32hd_0hl_Falsebid5kernel0.3dropout.json filter=lfs diff=lfs merge=lfs -text
+src/resources/csharp/perFileTimePygments.json filter=lfs diff=lfs merge=lfs -text
