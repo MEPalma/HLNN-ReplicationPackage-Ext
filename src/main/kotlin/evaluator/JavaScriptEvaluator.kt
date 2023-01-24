@@ -10,9 +10,9 @@ class JavaScriptEvaluator(
     userArgs: Array<String>,
 ) : Evaluator(
     userArgs = userArgs,
-    languageName = "javaScript",
-    oracleFileSourcesPath = "javaScript".toResourcePath(),
-    logOutputFilePath = "javaScript".toResourcePath(),
+    languageName = "javascript",
+    oracleFileSourcesPath = "javascript".toResourcePath(),
+    logOutputFilePath = "javascript".toResourcePath(),
     lexerOf = { JavaScriptLexer(it) },
     parserOf = { JavaScriptParser(it) },
     lexicalHighlighter = { javaScriptSemiLexicalHighlighter(it) },
