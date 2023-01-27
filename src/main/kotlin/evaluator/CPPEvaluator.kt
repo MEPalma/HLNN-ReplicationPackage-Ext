@@ -12,7 +12,7 @@ class CPPEvaluator(
     languageName = "cpp",
     oracleFileSourcesPath = "cpp".toResourcePath(),
     logOutputFilePath = "cpp".toResourcePath(),
-    lexerOf = { CPP14Lexer(it) },
+    lexerOf = { CPP14Lexer(it).also { lexer -> lexer.removeErrorListeners() } },
     parserOf = { CPP14Parser(it) },
     lexicalHighlighter = { cppLexicalHighlighter(it) },
     grammaticalHighlighter = CPPGrammaticalHighlighter(),

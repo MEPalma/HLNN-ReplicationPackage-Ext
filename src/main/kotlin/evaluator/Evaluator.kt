@@ -231,6 +231,8 @@ abstract class Evaluator(
         val prInput = ioPB.first
         val prOutput = ioPB.second
 
+        runModelAndGetNanos(prInput, prOutput, "warmup")
+
         val modelName = relativeTargetModelPath.split('/').last().replace(".json", "")
         File("$logOutputFilePath/perFileTimeModel_${modelName}.json").let { telemetries_file ->
             telemetries_file.writeText("[\n")
@@ -277,7 +279,7 @@ abstract class Evaluator(
         prInput.close()
     }
 
-    private fun runModelAndGetNanos(prInput: BufferedReader, prOutput: BufferedWriter, source: String): Long {
+    private fun runModelAndGetNanos(prInput: BufferedReader, prOutput: BufferedWriter, source: String = "??$$##--Warmup--##$$??"): Long {
         val t0 = System.nanoTime()
         val allTokens = lexerOf(CharStreams.fromString(source)).allTokens
         val t1 = System.nanoTime()
@@ -287,7 +289,10 @@ abstract class Evaluator(
         prOutput.flush()
         //
         val r = prInput.readAllLines(eager = true)
-        //
+
+        if (source == "??$$##--Warmup--##$$??")
+            return -1
+
         val python_model_delay_ns: Long = r[0]?.toLong() ?: -1
         //
         return python_model_delay_ns + (t1 - t0)
