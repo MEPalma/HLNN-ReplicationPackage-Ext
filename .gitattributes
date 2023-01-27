@@ -912,3 +912,4 @@ src/main/python/saved_model_losses/python3_1_66_CNNClassifier1_128embs_102id_16h
 src/main/python/saved_model_losses/kotlin_1_66_CNNClassifier1_128embs_178id_16hd_0hl_Falsebid5kernel0.3dropout.json filter=lfs diff=lfs merge=lfs -text
 src/main/python/saved_models/others.zip filter=lfs diff=lfs merge=lfs -text
 src/main/python/saved_model_losses/others.zip filter=lfs diff=lfs merge=lfs -text
+src/main/python/saved_model_losses filter=lfs diff=lfs merge=lfs -text
