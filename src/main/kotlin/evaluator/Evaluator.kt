@@ -226,6 +226,24 @@ abstract class Evaluator(
         }
     }
 
+    private fun perFileSize() {
+        val jhetasFilepath = "$oracleFileSourcesPath/oracle/jhetas_clean.json"
+        val sizes = mutableListOf<FileSizeItem>()
+        File(jhetasFilepath).bufferedReader().forEachLine { line ->
+            line.tryJSONHighlightedSourceFromJSON()?.let { jheta ->
+                val source = jheta.source.source
+                val sourceId = source.sourceToMD5FileId()
+                val ntoks = jheta.hetas.size
+                val nchars = source.length
+                sizes.add(FileSizeItem(sourceId, ntoks, nchars))
+            }
+        }
+
+        val logFile = File("$logOutputFilePath/perFileSize.json")
+        sizes.sortByDescending { fileSizeItem -> fileSizeItem.ntoks }
+        logFile.writeText(jacksonObjectMapper().writeValueAsString(sizes))
+    }
+
     private fun perFileTimeModel(relativeTargetModelPath: String, repeats: Int) {
         val ioPB = launchModelProcess(relativeTargetModelPath)
         val prInput = ioPB.first
@@ -636,6 +654,8 @@ abstract class Evaluator(
             "renderTree" ->
                 renderTree()
             //
+            "perFileSize" ->
+                perFileSize()
             else -> println("Unknown task arguments ${userArgs.toList()}")
         }
     }
