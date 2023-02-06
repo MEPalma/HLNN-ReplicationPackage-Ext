@@ -9,7 +9,7 @@ do
     echo "$fnamenoext"
         if [[ $fname == javascript* ]];
             then
-            ./gradlew JavaScriptEvaluator -Pargs="perFileTimeModel ../saved_model_losses/$fname false"
+            ./gradlew JavaScriptEvaluator -Pargs="perFileAcc ../saved_model_losses/$fname false"
             echo "$fname"
 
         elif [[ $fname == java* ]];
@@ -29,12 +29,12 @@ do
 
         elif [[ $fname == cpp* ]];
             then
-            ./gradlew CPPEvaluator -Pargs="perFileTimeModel ../saved_model_losses/$fname false"
+            ./gradlew CPPEvaluator -Pargs="perFileAcc ../saved_model_losses/$fname false"
             echo "$fname"
 
         elif [[ $fname == csharp* ]];
             then
-            ./gradlew CSharpEvaluator -Pargs="perFileTimeModel ../saved_model_losses/$fname false"
+            ./gradlew CSharpEvaluator -Pargs="perFileAcc ../saved_model_losses/$fname false"
             echo "$fname"
         else
             echo "Invalid $fname"
