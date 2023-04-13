@@ -249,7 +249,7 @@ abstract class Evaluator(
         val prInput = ioPB.first
         val prOutput = ioPB.second
 
-        runModelAndGetNanos(prInput, prOutput, "warmup")
+        runModelAndGetNanos(prInput, prOutput)
 
         val modelName = relativeTargetModelPath.split('/').last().replace(".json", "")
         File("$logOutputFilePath/perFileTimeModel_${modelName}.json").let { telemetries_file ->
