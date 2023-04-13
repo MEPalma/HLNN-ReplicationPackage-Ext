@@ -92,6 +92,8 @@ abstract class Evaluator(
                 val ioModelProcess = launchModelProcess(relativeTargetModelPath, foldName)
                 val prInputModel = ioModelProcess.first
                 val prOutputModel = ioModelProcess.second
+                // warmup
+                runModelAndGetNanos(prInputModel, prOutputModel)
 
                 telemetries_file.writeText("[\n")
                 //
