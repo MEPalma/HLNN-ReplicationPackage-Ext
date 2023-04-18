@@ -8,7 +8,8 @@ import utils.toResourcePath
 
 class CPPEvaluator(
     userArgs: Array<String>,
-) : Evaluator(userArgs = userArgs,
+) : Evaluator(
+    userArgs = userArgs,
     languageName = "cpp",
     oracleFileSourcesPath = "cpp".toResourcePath(),
     logOutputFilePath = "cpp".toResourcePath(),

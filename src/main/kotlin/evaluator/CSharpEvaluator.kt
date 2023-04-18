@@ -14,7 +14,7 @@ class CSharpEvaluator(
     languageName = "csharp",
     oracleFileSourcesPath = "csharp".toResourcePath(),
     logOutputFilePath = "csharp".toResourcePath(),
-    lexerOf = { CSharpLexer(it) },
+    lexerOf = { CSharpLexer(it).also { lexer -> lexer.removeErrorListeners() }  },
     parserOf = { CSharpParser(it) },
     lexicalHighlighter = { csharpPreprocessingLexicalHighlighter(it) },
     grammaticalHighlighter = CSharpGrammaticalHighlighter(),
