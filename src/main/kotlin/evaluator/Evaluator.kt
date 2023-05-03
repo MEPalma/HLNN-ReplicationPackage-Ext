@@ -316,8 +316,7 @@ abstract class Evaluator(
 
         if (source == "??$$##--Warmup--##$$??")
             return -1
-
-        val python_model_delay_ns: Long = r[0]?.toLong() ?: -1
+        val python_model_delay_ns: Long = r[r.size - 2]?.toLong() ?: -1
         //
         return python_model_delay_ns + (t1 - t0)
     }
