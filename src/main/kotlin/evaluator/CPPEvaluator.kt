@@ -19,5 +19,4 @@ class CPPEvaluator(
     grammaticalHighlighter = CPPGrammaticalHighlighter(),
     startRuleOf = { (it as CPP14Parser).translationUnit() })
 
-fun main() = CPPEvaluator(arrayOf("perFileAcc", "../saved_model_losses/cpp_1_28_CNNClassifier1_128embs_147id_128hd_0hl_Falsebid5kernel0.3dropout")).run()
-
+fun main(args: Array<String>) = CPPEvaluator(args).run()
