@@ -70,7 +70,7 @@ abstract class Evaluator(
         prOutputPygm.writeNewLineAndFlush("cd $relativePythonRunnerPath")
         prOutputPygm.writeNewLineAndFlush("python --version")
         prInputPygm.readAllLines(eager = true).printlnIn(GREEN_BACKGROUND)
-        prOutputPygm.writeNewLineAndFlush("python main.py usepygments $languageName")
+        prOutputPygm.writeNewLineAndFlush("python -u main.py usepygments $languageName")
         prInputPygm.readAllLines(eager = true).printlnIn(GREEN_BACKGROUND)
         return Pair(prInputPygm, prOutputPygm)
     }
