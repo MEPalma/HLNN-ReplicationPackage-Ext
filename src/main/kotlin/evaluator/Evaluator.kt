@@ -56,7 +56,7 @@ abstract class Evaluator(
         prOutputModel.writeNewLineAndFlush("cd $relativePythonRunnerPath")
         prOutputModel.writeNewLineAndFlush("python3 --version")
         prInputModel.readAllLines(eager = true).printlnIn(YELLOW_BACKGROUND)
-        prOutputModel.writeNewLineAndFlush("python3 main.py use $relativeTargetModelPath $foldName")
+        prOutputModel.writeNewLineAndFlush("python3 -u main.py use $relativeTargetModelPath $foldName")
         prInputModel.readAllLines(eager = true).printlnIn(YELLOW_BACKGROUND)
         return Pair(prInputModel, prOutputModel)
     }
