@@ -103,8 +103,8 @@ def use(log_path: str, model_index: int = 0):
                 t1 = time.time_ns()
                 #
                 model_cmp_time_ns = round(t1 - t0)
-                print(model_cmp_time_ns)
-                print(*[thc.item() for thc in ps], sep=" ", flush=True)
+                outstr = f'{model_cmp_time_ns}\n{" ".join([str(thc.item()) for thc in ps])}'
+                print(outstr, flush=True)
 
 
 def usepygments(lang: str):

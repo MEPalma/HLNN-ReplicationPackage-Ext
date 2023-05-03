@@ -156,8 +156,10 @@ abstract class Evaluator(
                             prOutputModel.appendLine()
                             prOutputModel.flush()
                             //
+                            val modelalllines = prInputModel.readAllLines(eager=true)
+                            val modellastline = modelalllines.last()
                             val accModel =
-                                (prInputModel.readAllLines(eager = true)[1]?.split(' ')?.map { it.toInt() }?.toList()
+                                (modellastline?.split(' ')?.map { it.toInt() }?.toList()
                                     ?: error("No model output for $jheta")
                                         ).let { hCodes ->
                                         val modelPredHetas =
@@ -176,8 +178,10 @@ abstract class Evaluator(
                             prOutputPygm.appendLine()
                             prOutputPygm.flush()
                             //
+                            val pygalllines = prInputPygm.readAllLines(eager=true)
+                            val pyglastline = pygalllines.last()
                             val accPygm =
-                                prInputPygm.readAllLines(eager = true)[1]?.let { strPygmentsTokenBindings ->
+                                pyglastline?.let { strPygmentsTokenBindings ->
                                     jacksonObjectMapper().readValue<PygmentRawSolSeq?>(strPygmentsTokenBindings)
                                         ?.let { pygmentsTokenBindings ->
                                             // Pygments is always task 4 (66), hence always needs converting.
