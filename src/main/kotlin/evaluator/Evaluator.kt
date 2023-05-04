@@ -48,9 +48,10 @@ abstract class Evaluator(
 
     private fun postJson(client: HttpClient, uri: String, json: HttpRequestObject): HttpResponse<String> {
         val requestBody: String = jacksonObjectMapper().writeValueAsString(json)
-        val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(uri)).setHeader("Content-Type", "application/json").POST(
-            HttpRequest.BodyPublishers.ofString(requestBody)
-        ).build()
+        val request: HttpRequest =
+            HttpRequest.newBuilder().uri(URI.create(uri)).setHeader("Content-Type", "application/json").POST(
+                HttpRequest.BodyPublishers.ofString(requestBody)
+            ).build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofString());
         return response
     }
@@ -85,11 +86,9 @@ abstract class Evaluator(
         return jacksonObjectMapper().readValue<EvalWithPygmentsResponse>(response.body())
     }
 
-    private fun perFileAcc(modelLogName: String) {
+    private fun perFileAccModel(modelLogName: String) {
         val taskCode = modelLogName.split('_')[2].toInt()
         val taskAdapter = getTaskAdapter(taskCode) // This is how an oracle value is converted to a task value.
-
-        val pygClient = this.setupPygmentsConnection(this.languageName)
 
         for (foldName in 0..2) {
             val modClient = this.setupModelConnection(modelLogName, foldName)
@@ -111,82 +110,35 @@ abstract class Evaluator(
                         Array<JSONHighlightedSource>::class.java
                     )
                     //
-                    var bruteAccAcc = 0.0
                     var modelAccAcc = 0.0
-                    var pygmAccAcc = 0.0
                     //
                     for (jheta in jhetas) {
                         if (jheta.source.source.isNotEmpty() && jheta.hetas.isNotEmpty()) {
                             if (i % 100 == 0)
-                                print("\rOn JHETA number $i, ${bruteAccAcc / i},  ${modelAccAcc / i}, ${pygmAccAcc / i}")
+                                print("\rOn JHETA number $i, ${modelAccAcc / i}")
 
                             // Target task sequence.
                             val targetHCharSeq =
                                 jheta.hetas.toHChars(jheta.source.source).also { it.adaptedToInplace(taskAdapter) }
-
-                            // Run on brute.
-                            val accBrute =
-                                if (jheta_file.second) {
-                                    var startRule: RuleContext? = null
-                                    jheta.source.source.tryToETAS(
-                                        lexerOf = lexerOf,
-                                        parserOf = parserOf,
-                                        startRuleOf = { startRuleOf(it).let { st -> startRule = st; st } },
-                                        resolver = ETAMarshaller::tryFromContext,
-                                        lexerChannels = lexerChannels,
-                                        withErrorListeners = false
-                                    )?.let { etas ->
-                                        val hetas = etas.highlightedAs { lexicalHighlighter(it) }
-                                        startRule?.let {
-                                            grammaticalHighlighter.reset() // Redundant.
-                                            ParseTreeWalker.DEFAULT.walk(grammaticalHighlighter, it)
-                                            OHighlight.applyOverrides(hetas, grammaticalHighlighter.getOverrides())
-                                            grammaticalHighlighter.reset()
-                                        }
-                                        // Oracle is alwyas task 4 (66), hence always needs converting.
-                                        val brutePredHCharSeq =
-                                            hetas.toHChars(jheta.source.source)
-                                                .also { it.adaptedToInplace(taskAdapter) }
-                                        charBaseAccOf(brutePredHCharSeq, targetHCharSeq)
-                                    } ?: 0.0
-                                } else 1.0 // Brute force is always perfect ('jheta' already contains its output).
-                            bruteAccAcc += accBrute
 
                             // Run on model.
                             val inputTokenIds = jheta.hetas.map { it.eta.tokenRule }.toList()
                             val modRes = this.evalWithModel(inputTokenIds, modClient)
                             val accModel =
                                 modRes.ps.let { hCodes ->
-                                        val modelPredHetas =
-                                            jheta.hetas.zip(hCodes).map { it.first.copy(highlightCode = it.second) }
-                                                .toTypedArray()
-                                        val modelPredHCharSeq = modelPredHetas.toHChars(jheta.source.source)
-                                        charBaseAccOf(modelPredHCharSeq, targetHCharSeq)
-                                    }
+                                    val modelPredHetas =
+                                        jheta.hetas.zip(hCodes).map { it.first.copy(highlightCode = it.second) }
+                                            .toTypedArray()
+                                    val modelPredHCharSeq = modelPredHetas.toHChars(jheta.source.source)
+                                    charBaseAccOf(modelPredHCharSeq, targetHCharSeq)
+                                }
                             modelAccAcc += accModel
-
-                            // Run on pygments.
-                            val pygRes = this.evalWithPygments(jheta.source.source, pygClient)
-                            val accPygm =
-                                pygRes.res_json.let { strPygmentsTokenBindings ->
-                                    jacksonObjectMapper().readValue<PygmentRawSolSeq?>(strPygmentsTokenBindings)
-                                        ?.let { pygmentsTokenBindings ->
-                                            // Pygments is always task 4 (66), hence always needs converting.
-                                            val pygPredHCharSeq =
-                                                pygmentsTokenBindings.toPygmentSols().toHChars(jheta.source.source)
-                                                    .also { it.adaptedToInplace(taskAdapter) }
-                                            charBaseAccOf(pygPredHCharSeq, targetHCharSeq)
-                                        } ?: error("No valid acc Pygm 2 for $jheta.")
-                                } ?: error("No valid acc Pygm 1 for $jheta.")
-                            pygmAccAcc += accPygm
 
                             // Create log.
                             val log = FileAccItem(
                                 jheta.source.source.sourceToMD5FileId(),
                                 jheta_file.second,
-                                accBrute,
                                 accModel,
-                                accPygm
                             )
 
                             // Write to file
@@ -206,6 +158,168 @@ abstract class Evaluator(
             } else println("Skipped $foldName")
         }
     }
+
+
+    private fun perFileAccPygments() {
+        val pygClient = this.setupPygmentsConnection(this.languageName)
+        for (taskCode in arrayOf(28, 37, 55, 66)) {
+            val taskAdapter = getTaskAdapter(taskCode)
+            for (foldName in 0..2) {
+                val telemetries_file = File("$logOutputFilePath/perFileAcc_pygments_${taskCode}_${foldName}.json")
+                if (!telemetries_file.isFile) {
+                    telemetries_file.writeText("[\n")
+                    //
+                    val jhetas_files = listOf(
+                        Pair("$oracleFileSourcesPath/folds/fold${foldName}_testing.json", false),
+                        Pair("$oracleFileSourcesPath/folds/fold${foldName}_snippets.json", true)
+                    )
+                    //
+                    var i = 0
+                    for (jheta_file in jhetas_files) {
+                        println("Loading file ${jheta_file.first}")
+                        val jhetas = jacksonObjectMapper().readValue(
+                            File(jheta_file.first),
+                            Array<JSONHighlightedSource>::class.java
+                        )
+                        //
+                        var pygmAccAcc = 0.0
+                        //
+                        for (jheta in jhetas) {
+                            if (jheta.source.source.isNotEmpty() && jheta.hetas.isNotEmpty()) {
+                                if (i % 100 == 0)
+                                    print("\rOn JHETA number $i, ${pygmAccAcc / i}")
+
+                                // Target task sequence.
+                                val targetHCharSeq =
+                                    jheta.hetas.toHChars(jheta.source.source).also { it.adaptedToInplace(taskAdapter) }
+
+                                // Run on pygments.
+                                val pygRes = this.evalWithPygments(jheta.source.source, pygClient)
+                                val accPygm =
+                                    pygRes.res_json.let { strPygmentsTokenBindings ->
+                                        jacksonObjectMapper().readValue<PygmentRawSolSeq?>(strPygmentsTokenBindings)
+                                            ?.let { pygmentsTokenBindings ->
+                                                // Pygments is always task 4 (66), hence always needs converting.
+                                                val pygPredHCharSeq =
+                                                    pygmentsTokenBindings.toPygmentSols().toHChars(jheta.source.source)
+                                                        .also { it.adaptedToInplace(taskAdapter) }
+                                                charBaseAccOf(pygPredHCharSeq, targetHCharSeq)
+                                            } ?: error("No valid acc Pygm 2 for $jheta.")
+                                    } ?: error("No valid acc Pygm 1 for $jheta.")
+                                pygmAccAcc += accPygm
+
+                                // Create log.
+                                val log = FileAccItem(
+                                    jheta.source.source.sourceToMD5FileId(),
+                                    jheta_file.second,
+                                    accPygm
+                                )
+
+                                // Write to file
+                                if (i > 0)
+                                    telemetries_file.appendText(",\n")
+                                telemetries_file.appendText(jacksonObjectMapper().writeValueAsString(log))
+                                telemetries_file.appendText("\n")
+
+                                ++i
+                            }
+                        }
+                        println()
+                    }
+                    //
+                    telemetries_file.appendText("]\n")
+                    println("Done $foldName")
+                } else println("Skipped $foldName")
+            }
+        }
+    }
+
+    private fun perFileAccBrute() {
+        for (taskCode in arrayOf(28, 37, 55, 66)) {
+            val taskAdapter = getTaskAdapter(taskCode)
+            for (foldName in 0..2) {
+                val telemetries_file = File("$logOutputFilePath/perFileAcc_Brute_${foldName}.json")
+                if (!telemetries_file.isFile) {
+                    telemetries_file.writeText("[\n")
+                    //
+                    val jhetas_files = listOf(
+                        Pair("$oracleFileSourcesPath/folds/fold${foldName}_testing.json", false),
+                        Pair("$oracleFileSourcesPath/folds/fold${foldName}_snippets.json", true)
+                    )
+                    //
+                    var i = 0
+                    for (jheta_file in jhetas_files) {
+                        println("Loading file ${jheta_file.first}")
+                        val jhetas = jacksonObjectMapper().readValue(
+                            File(jheta_file.first),
+                            Array<JSONHighlightedSource>::class.java
+                        )
+                        //
+                        var bruteAccAcc = 0.0
+                        //
+                        for (jheta in jhetas) {
+                            if (jheta.source.source.isNotEmpty() && jheta.hetas.isNotEmpty()) {
+                                if (i % 100 == 0)
+                                    print("\rOn JHETA number $i, ${bruteAccAcc / i}")
+
+                                // Target task sequence.
+                                val targetHCharSeq =
+                                    jheta.hetas.toHChars(jheta.source.source).also { it.adaptedToInplace(taskAdapter) }
+
+                                // Run on brute.
+                                val accBrute =
+                                    if (jheta_file.second) {
+                                        var startRule: RuleContext? = null
+                                        jheta.source.source.tryToETAS(
+                                            lexerOf = lexerOf,
+                                            parserOf = parserOf,
+                                            startRuleOf = { startRuleOf(it).let { st -> startRule = st; st } },
+                                            resolver = ETAMarshaller::tryFromContext,
+                                            lexerChannels = lexerChannels,
+                                            withErrorListeners = false
+                                        )?.let { etas ->
+                                            val hetas = etas.highlightedAs { lexicalHighlighter(it) }
+                                            startRule?.let {
+                                                grammaticalHighlighter.reset() // Redundant.
+                                                ParseTreeWalker.DEFAULT.walk(grammaticalHighlighter, it)
+                                                OHighlight.applyOverrides(hetas, grammaticalHighlighter.getOverrides())
+                                                grammaticalHighlighter.reset()
+                                            }
+                                            // Oracle is always task 4 (66), hence always needs converting.
+                                            val brutePredHCharSeq =
+                                                hetas.toHChars(jheta.source.source)
+                                                    .also { it.adaptedToInplace(taskAdapter) }
+                                            charBaseAccOf(brutePredHCharSeq, targetHCharSeq)
+                                        } ?: 0.0
+                                    } else 1.0 // Brute force is always perfect ('jheta' already contains its output).
+                                bruteAccAcc += accBrute
+
+                                // Create log.
+                                val log = FileAccItem(
+                                    jheta.source.source.sourceToMD5FileId(),
+                                    jheta_file.second,
+                                    accBrute,
+                                )
+
+                                // Write to file
+                                if (i > 0)
+                                    telemetries_file.appendText(",\n")
+                                telemetries_file.appendText(jacksonObjectMapper().writeValueAsString(log))
+                                telemetries_file.appendText("\n")
+
+                                ++i
+                            }
+                        }
+                        println()
+                    }
+                    //
+                    telemetries_file.appendText("]\n")
+                    println("Done $foldName")
+                } else println("Skipped $foldName")
+            }
+        }
+    }
+
 
     private fun perFileSize() {
         val jhetasFilepath = "$oracleFileSourcesPath/oracle/jhetas_clean.json"
@@ -553,8 +667,14 @@ abstract class Evaluator(
 
     override fun run() {
         when (userArgs[0]) {
-            "perFileAcc" ->
-                perFileAcc(userArgs[1].removeSuffix(".json"))
+            "perFileAccModel" ->
+                perFileAccModel(userArgs[1].removeSuffix(".json"))
+
+            "perFileAccPygments" ->
+                perFileAccPygments()
+
+            "perFileAccBrute" ->
+                perFileAccBrute()
 
             "perFileTimeBrute" ->
                 perFileTimeBrute(REPEATS)
@@ -579,6 +699,7 @@ abstract class Evaluator(
 
             "perFileSize" ->
                 perFileSize()
+
             else -> println("Unknown task arguments ${userArgs.toList()}")
         }
     }
