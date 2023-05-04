@@ -9,32 +9,32 @@ do
     echo "$fnamenoext"
         if [[ $fname == javascript* ]];
             then
-            ./gradlew JavaScriptEvaluator -Pargs="perFileAcc ../saved_model_losses/$fname false"
+            ./gradlew JavaScriptEvaluator -Pargs="perFileAcc $fname false"
             echo "$fname"
 
         elif [[ $fname == java* ]];
             then
-            ./gradlew JavaEvaluator -Pargs="perFileAcc ../saved_model_losses/$fname"
+            ./gradlew JavaEvaluator -Pargs="perFileAcc $fname"
             echo "$fname"
 
         elif [[ $fname == kotlin* ]];
             then
-            ./gradlew KotlinEvaluator -Pargs="perFileAcc ../saved_model_losses/$fname"
+            ./gradlew KotlinEvaluator -Pargs="perFileAcc $fname"
             echo "$fname"
 
         elif [[ $fname == python* ]];
             then
-            ./gradlew Python3Evaluator -Pargs="perFileAcc ../saved_model_losses/$fname"
+            ./gradlew Python3Evaluator -Pargs="perFileAcc $fname"
             echo "$fname"
 
         elif [[ $fname == cpp* ]];
             then
-            ./gradlew CPPEvaluator -Pargs="perFileAcc ../saved_model_losses/$fname false"
+            ./gradlew CPPEvaluator -Pargs="perFileAcc $fname false"
             echo "$fname"
 
         elif [[ $fname == csharp* ]];
             then
-            ./gradlew CSharpEvaluator -Pargs="perFileAcc ../saved_model_losses/$fname false"
+            ./gradlew CSharpEvaluator -Pargs="perFileAcc $fname false"
             echo "$fname"
         else
             echo "Invalid $fname"
