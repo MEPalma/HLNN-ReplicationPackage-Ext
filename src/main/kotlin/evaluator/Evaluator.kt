@@ -3,7 +3,6 @@ package evaluator
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import common.*
-import common.ETAMarshaller.Companion.tryETAFromJSON
 import common.JSONSourceMarshaller.Companion.sourceToMD5FileId
 import common.JSONSourceMarshaller.Companion.tryJSONHighlightedSourceFromJSON
 import common.PygmentSol.Companion.toPygmentSols
@@ -22,6 +21,10 @@ import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import java.io.*
 import java.lang.Exception
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 import java.util.*
 import javax.swing.JFrame
 import javax.swing.JPanel
@@ -42,59 +45,57 @@ abstract class Evaluator(
     val lexerChannels: Array<Int> = arrayOf(Token.HIDDEN_CHANNEL)
 ) : Runnable {
     private val REPEATS: Int = 30
-    private val SHELL_LAUNCH_SYS_CALL: String = "/bin/bash"
 
-    private fun launchModelProcess(
-        relativeTargetModelPath: String,
-        foldName: Int = 1
-    ): Pair<BufferedReader, BufferedWriter> {
-        val pbModel = ProcessBuilder(SHELL_LAUNCH_SYS_CALL)
-        pbModel.redirectErrorStream(true)
-        val prModel = pbModel.start()
-        val prInputModel = BufferedReader(InputStreamReader(prModel.inputStream))
-        val prOutputModel = BufferedWriter(OutputStreamWriter(prModel.outputStream))
-        prOutputModel.writeNewLineAndFlush("cd $relativePythonRunnerPath")
-        prOutputModel.writeNewLineAndFlush("python3 --version")
-        prInputModel.readAllLines(eager = true).printlnIn(YELLOW_BACKGROUND)
-        prOutputModel.writeNewLineAndFlush("python3 -u main.py use $relativeTargetModelPath $foldName")
-        prInputModel.readAllLines(eager = true).printlnIn(YELLOW_BACKGROUND)
-        return Pair(prInputModel, prOutputModel)
+    private fun postJson(client: HttpClient, uri: String, json: HttpRequestObject): HttpResponse<String> {
+        val requestBody: String = jacksonObjectMapper().writeValueAsString(json)
+        val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(uri)).setHeader("Content-Type", "application/json").POST(
+            HttpRequest.BodyPublishers.ofString(requestBody)
+        ).build()
+        val response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        return response
     }
 
-    private fun launchPygmentsProcess(): Pair<BufferedReader, BufferedWriter> {
-        val pbPygm = ProcessBuilder(SHELL_LAUNCH_SYS_CALL)
-        pbPygm.redirectErrorStream(true)
-        val prPygm = pbPygm.start()
-        val prInputPygm = BufferedReader(InputStreamReader(prPygm.inputStream))
-        val prOutputPygm = BufferedWriter(OutputStreamWriter(prPygm.outputStream))
-        prOutputPygm.writeNewLineAndFlush("cd $relativePythonRunnerPath")
-        prOutputPygm.writeNewLineAndFlush("python --version")
-        prInputPygm.readAllLines(eager = true).printlnIn(GREEN_BACKGROUND)
-        prOutputPygm.writeNewLineAndFlush("python -u main.py usepygments $languageName")
-        prInputPygm.readAllLines(eager = true).printlnIn(GREEN_BACKGROUND)
-        return Pair(prInputPygm, prOutputPygm)
+    private fun setupModelConnection(modelLogName: String, foldName: Int = 1): HttpClient {
+        val client = HttpClient.newBuilder().build()
+        this.postJson(
+            client,
+            "http://127.0.0.1:5000/load_model",
+            LoadModelRequest(modelLogName, foldName)
+        )
+        return client
     }
 
-    private fun perFileAcc(relativeTargetModelPath: String) {
-        val modelName = relativeTargetModelPath.split('/').last().replace(".json", "")
-        val taskCode = modelName.split('_')[2].toInt()
+    private fun evalWithModel(inputTokenIds: List<Int>, client: HttpClient): EvalWithModelResponse {
+        val response = this.postJson(client, "http://127.0.0.1:5000/eval_model", EvalWithModelRequest(inputTokenIds))
+        return jacksonObjectMapper().readValue<EvalWithModelResponse>(response.body())
+    }
+
+    private fun setupPygmentsConnection(lang: String): HttpClient {
+        val client = HttpClient.newBuilder().build()
+        this.postJson(
+            client,
+            "http://127.0.0.1:5000/load_pygments",
+            LoadPygmentsRequest(lang)
+        )
+        return client
+    }
+
+    private fun evalWithPygments(src: String, client: HttpClient): EvalWithPygmentsResponse {
+        val response = this.postJson(client, "http://127.0.0.1:5000/eval_pygments", EvalWithPygmentsRequest(src))
+        return jacksonObjectMapper().readValue<EvalWithPygmentsResponse>(response.body())
+    }
+
+    private fun perFileAcc(modelLogName: String) {
+        val taskCode = modelLogName.split('_')[2].toInt()
         val taskAdapter = getTaskAdapter(taskCode) // This is how an oracle value is converted to a task value.
 
+        val pygClient = this.setupPygmentsConnection(this.languageName)
+
         for (foldName in 0..2) {
-            val telemetries_file = File("$logOutputFilePath/perFileAcc_${modelName}_${foldName}.json")
+            val modClient = this.setupModelConnection(modelLogName, foldName)
+
+            val telemetries_file = File("$logOutputFilePath/perFileAcc_${modelLogName}_${foldName}.json")
             if (!telemetries_file.isFile) {
-                // Open Pygments process.
-                val ioPygmentsProcess = launchPygmentsProcess()
-                val prInputPygm = ioPygmentsProcess.first
-                val prOutputPygm = ioPygmentsProcess.second
-
-                // Launch model's process on this fold.
-                val ioModelProcess = launchModelProcess(relativeTargetModelPath, foldName)
-                val prInputModel = ioModelProcess.first
-                val prOutputModel = ioModelProcess.second
-                // warmup
-                runModelAndGetNanos(prInputModel, prOutputModel)
-
                 telemetries_file.writeText("[\n")
                 //
                 val jhetas_files = listOf(
@@ -152,16 +153,10 @@ abstract class Evaluator(
                             bruteAccAcc += accBrute
 
                             // Run on model.
-                            jheta.hetas.forEach { prOutputModel.append(it.eta.tokenRule.toString()).append(' ') }
-                            prOutputModel.appendLine()
-                            prOutputModel.flush()
-                            //
-                            val modelalllines = prInputModel.readAllLines(eager=true)
-                            val modellastline = modelalllines.last()
+                            val inputTokenIds = jheta.hetas.map { it.eta.tokenRule }.toList()
+                            val modRes = this.evalWithModel(inputTokenIds, modClient)
                             val accModel =
-                                (modellastline?.split(' ')?.map { it.toInt() }?.toList()
-                                    ?: error("No model output for $jheta")
-                                        ).let { hCodes ->
+                                modRes.ps.let { hCodes ->
                                         val modelPredHetas =
                                             jheta.hetas.zip(hCodes).map { it.first.copy(highlightCode = it.second) }
                                                 .toTypedArray()
@@ -171,17 +166,9 @@ abstract class Evaluator(
                             modelAccAcc += accModel
 
                             // Run on pygments.
-                            prOutputPygm.append(
-                                jacksonObjectMapper().writeValueAsString(
-                                    hashMapOf<String, String>().apply { put("source", jheta.source.source) })
-                            )
-                            prOutputPygm.appendLine()
-                            prOutputPygm.flush()
-                            //
-                            val pygalllines = prInputPygm.readAllLines(eager=true)
-                            val pyglastline = pygalllines.last()
+                            val pygRes = this.evalWithPygments(jheta.source.source, pygClient)
                             val accPygm =
-                                pyglastline?.let { strPygmentsTokenBindings ->
+                                pygRes.res_json.let { strPygmentsTokenBindings ->
                                     jacksonObjectMapper().readValue<PygmentRawSolSeq?>(strPygmentsTokenBindings)
                                         ?.let { pygmentsTokenBindings ->
                                             // Pygments is always task 4 (66), hence always needs converting.
@@ -208,7 +195,6 @@ abstract class Evaluator(
                             telemetries_file.appendText(jacksonObjectMapper().writeValueAsString(log))
                             telemetries_file.appendText("\n")
 
-                            //
                             ++i
                         }
                     }
@@ -217,17 +203,6 @@ abstract class Evaluator(
                 //
                 telemetries_file.appendText("]\n")
                 println("Done $foldName")
-
-                prOutputPygm.append("e")
-                prOutputPygm.appendLine()
-                prOutputPygm.flush()
-                prInputPygm.close()
-                //
-                prOutputModel.append("e")
-                prOutputModel.appendLine()
-                prOutputModel.flush()
-                prInputModel.close()
-                "Processes".printlnIn(YELLOW_BACKGROUND)
             } else println("Skipped $foldName")
         }
     }
@@ -250,15 +225,10 @@ abstract class Evaluator(
         logFile.writeText(jacksonObjectMapper().writeValueAsString(sizes))
     }
 
-    private fun perFileTimeModel(relativeTargetModelPath: String, repeats: Int) {
-        val ioPB = launchModelProcess(relativeTargetModelPath)
-        val prInput = ioPB.first
-        val prOutput = ioPB.second
+    private fun perFileTimeModel(modelLogName: String, repeats: Int) {
+        val modelClient: HttpClient = this.setupModelConnection(modelLogName = modelLogName)
 
-        runModelAndGetNanos(prInput, prOutput)
-
-        val modelName = relativeTargetModelPath.split('/').last().replace(".json", "")
-        File("$logOutputFilePath/perFileTimeModel_${modelName}.json").let { telemetries_file ->
+        File("$logOutputFilePath/perFileTimeModel_${modelLogName}.json").let { telemetries_file ->
             telemetries_file.writeText("[\n")
             //
             val jhetasFilepath = "$oracleFileSourcesPath/oracle/jhetas_clean.json"
@@ -272,7 +242,7 @@ abstract class Evaluator(
                     if (source.isNotEmpty()) {
                         val nanoseconds = mutableListOf<Long>()
                         repeat(repeats) {
-                            nanoseconds.add(runModelAndGetNanos(prInput, prOutput, source))
+                            nanoseconds.add(runModelAndGetNanos(modelClient, source))
                         }
                         //
                         if (i > 1)
@@ -295,30 +265,16 @@ abstract class Evaluator(
             //
             telemetries_file.appendText("]")
         }
-        //
-        prOutput.append("e")
-        prOutput.appendLine()
-        prOutput.flush()
-        prOutput.close()
-        prInput.close()
     }
 
-    private fun runModelAndGetNanos(prInput: BufferedReader, prOutput: BufferedWriter, source: String = "??$$##--Warmup--##$$??"): Long {
+    private fun runModelAndGetNanos(modelClient: HttpClient, source: String): Long {
         val t0 = System.nanoTime()
-        val allTokens = lexerOf(CharStreams.fromString(source)).allTokens
+        val allTokens: List<Int> = lexerOf(CharStreams.fromString(source)).allTokens.map { it.type }.toList()
         val t1 = System.nanoTime()
-        //
-        allTokens.map { it.type }.forEach { prOutput.append(it.toString()).append(' ') }
-        prOutput.appendLine()
-        prOutput.flush()
-        //
-        val r = prInput.readAllLines(eager = true)
-
-        if (source == "??$$##--Warmup--##$$??")
-            return -1
-        val python_model_delay_ns: Long = r[r.size - 2]?.toLong() ?: -1
-        //
-        return python_model_delay_ns + (t1 - t0)
+        val evalRes: EvalWithModelResponse = this.evalWithModel(
+            allTokens, modelClient
+        )
+        return evalRes.ns + (t1 - t0)
     }
 
     private fun perFileTimeBrute(repeats: Int) {
@@ -394,9 +350,7 @@ abstract class Evaluator(
     }
 
     private fun perFileTimePygments(repeats: Int) {
-        val ioPyg = launchPygmentsProcess()
-        val prInput = ioPyg.first
-        val prOutput = ioPyg.second
+        val pygClient = this.setupPygmentsConnection(this.languageName)
 
         val jhetasFilepath = "$oracleFileSourcesPath/oracle/jhetas_clean.json"
         var i = 1
@@ -411,7 +365,7 @@ abstract class Evaluator(
                     if (source.isNotEmpty()) {
                         val nanoseconds = mutableListOf<Long>()
                         repeat(repeats) {
-                            nanoseconds.add(runPygmentsAndGetNanos(prInput, prOutput, source))
+                            nanoseconds.add(runPygmentsAndGetNanos(pygClient, source))
                         }
                         //
                         if (i > 1)
@@ -433,25 +387,11 @@ abstract class Evaluator(
             }
             telemetries_file.appendText("]")
         }
-        prOutput.append("e")
-        prOutput.appendLine()
-        prOutput.flush()
-        prOutput.close()
-        prInput.close()
     }
 
-    private fun runPygmentsAndGetNanos(prInput: BufferedReader, prOutput: BufferedWriter, source: String): Long {
-        val commMap = hashMapOf<String, String>().apply { put("source", source) }
-        prOutput.append(jacksonObjectMapper().writeValueAsString(commMap))
-        //
-        prOutput.appendLine()
-        prOutput.flush()
-        //
-        val r = prInput.readAllLines(eager = true)
-        //
-        val python_delay_ns: Long = r[0]?.toLong() ?: -1
-        //
-        return python_delay_ns
+    private fun runPygmentsAndGetNanos(pygmentsClient: HttpClient, source: String): Long {
+        val pygRes: EvalWithPygmentsResponse = this.evalWithPygments(source, pygmentsClient)
+        return pygRes.ns
     }
 
     private fun renderTree() {
@@ -525,22 +465,14 @@ abstract class Evaluator(
         }
     }
 
-    private fun fileToHTMLModel(filepath: String, relativeTargetModelPath: String) {
-        // Launch model's process on this fold.
-        val ioModelProcess = launchModelProcess(relativeTargetModelPath)
-        val prInput = ioModelProcess.first
-        val prOutput = ioModelProcess.second
-        //
+    private fun fileToHTMLModel(filepath: String, modelLogName: String) {
+        val modClient: HttpClient = this.setupModelConnection(modelLogName)
         File(filepath).readText(charset = Charsets.UTF_8).let { src ->
             val allTokens = lexerOf(CharStreams.fromString(src)).allTokens
-            allTokens.map { it.type }.forEach {
-                prOutput.append(it.toString()).append(' ')
-            }
-            prOutput.appendLine()
-            prOutput.flush()
+            val tokenIds = allTokens.map { it.type }.toList()
+            val response: EvalWithModelResponse = this.evalWithModel(tokenIds, modClient)
             //
-            val response = prInput.readAllLines(eager = true)[1]?.split(" ")
-            response?.map { it.toInt() }?.let { hIntCodes ->
+            response.ps.let { hIntCodes ->
                 val etas = allTokens.map { tok ->
                     ETA(
                         startIndex = tok.startIndex,
@@ -579,24 +511,15 @@ abstract class Evaluator(
                 } ?: println("Accuracy unavailable.")
             }
         }
-        //
-        prOutput.append("e")
-        prOutput.appendLine()
-        prOutput.flush()
-        prInput.close()
     }
 
     private fun fileToHTMLPygments(filepath: String) {
-        val ioPygmentsProcess = launchPygmentsProcess()
-        val prInput = ioPygmentsProcess.first
-        val prOutput = ioPygmentsProcess.second
+        val pygClient: HttpClient = this.setupPygmentsConnection(this.languageName)
         //
         File(filepath).readText(charset = Charsets.UTF_8).let { src ->
-            val commMap = hashMapOf<String, String>().apply { put("source", src) }
-            prOutput.append(jacksonObjectMapper().writeValueAsString(commMap))
-            prOutput.appendLine()
-            prOutput.flush()
-            prInput.readAllLines(eager = true)[1]?.let { strPygmentsTokenBindings ->
+
+            val pygRes: EvalWithPygmentsResponse = this.evalWithPygments(src, pygClient)
+            pygRes.res_json.let { strPygmentsTokenBindings ->
                 jacksonObjectMapper().readValue<PygmentRawSolSeq?>(strPygmentsTokenBindings)
                     ?.let { pygmentsTokenBindings ->
                         // Pygments is always task 4 (66), hence always needs converting.
@@ -626,39 +549,34 @@ abstract class Evaluator(
                     } ?: error("No valid acc Pygm 2 for.")
             } ?: error("No valid acc Pygm 1 for.")
         }
-        //
-        prOutput.append("e")
-        prOutput.appendLine()
-        prOutput.flush()
-        prInput.close()
     }
 
     override fun run() {
         when (userArgs[0]) {
             "perFileAcc" ->
-                perFileAcc(userArgs[1])
-            //
+                perFileAcc(userArgs[1].removeSuffix(".json"))
+
             "perFileTimeBrute" ->
                 perFileTimeBrute(REPEATS)
 
             "perFileTimeModel" ->
-                perFileTimeModel(userArgs[1], REPEATS)
+                perFileTimeModel(userArgs[1].removeSuffix(".json"), REPEATS)
 
             "perFileTimePygments" ->
                 perFileTimePygments(REPEATS)
-            //
+
             "fileToHTMLBrute" ->
                 fileToHTMLBrute(userArgs[1])
 
             "fileToHTMLModel" ->
-                fileToHTMLModel(userArgs[1], userArgs[2])
+                fileToHTMLModel(userArgs[1], userArgs[2].removeSuffix(".json"))
 
             "fileToHTMLPygments" ->
                 fileToHTMLPygments(userArgs[1])
-            //
+
             "renderTree" ->
                 renderTree()
-            //
+
             "perFileSize" ->
                 perFileSize()
             else -> println("Unknown task arguments ${userArgs.toList()}")
