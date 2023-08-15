@@ -41,3 +41,20 @@ do
         fi
 
 done
+
+
+./gradlew CSharpEvaluator -Pargs="perFileTimePygments"
+./gradlew JavaScriptEvaluator -Pargs="perFileTimePygments"
+./gradlew JavaEvaluator -Pargs="perFileTimePygments"
+./gradlew KotlinEvaluator -Pargs="perFileTimePygments"
+./gradlew Python3Evaluator -Pargs="perFileTimePygments"
+./gradlew CPPEvaluator -Pargs="perFileTimePygments"
+./gradlew CSharpEvaluator -Pargs="perFileTimePygments"
+
+./gradlew CSharpEvaluator -Pargs="perFileTimeModel"
+./gradlew JavaScriptEvaluator -Pargs="perFileTimeModel"
+./gradlew JavaEvaluator -Pargs="perFileTimeModel"
+./gradlew KotlinEvaluator -Pargs="perFileTimeModel"
+./gradlew Python3Evaluator -Pargs="perFileTimeModel"
+./gradlew CPPEvaluator -Pargs="perFileTimeModel"
+./gradlew CSharpEvaluator -Pargs="perFileTimeModel"
