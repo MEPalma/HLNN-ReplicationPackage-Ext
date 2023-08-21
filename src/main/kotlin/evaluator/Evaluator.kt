@@ -238,79 +238,72 @@ abstract class Evaluator(
         for (taskCode in arrayOf(28, 37, 55, 66)) {
             val taskAdapter = getTaskAdapter(taskCode)
             for (foldName in 0..2) {
-                val telemetries_file = File("$logOutputFilePath/perFileAcc_Brute_${foldName}.json")
+                val telemetries_file = File("$logOutputFilePath/perFileAcc_Brute_${taskCode}_${foldName}.json")
                 if (!telemetries_file.isFile) {
                     telemetries_file.writeText("[\n")
                     //
-                    val jhetas_files = listOf(
-                        Pair("$oracleFileSourcesPath/folds/fold${foldName}_testing.json", false),
-                        Pair("$oracleFileSourcesPath/folds/fold${foldName}_snippets.json", true)
-                    )
+                    val snippetsFile = "$oracleFileSourcesPath/folds/fold${foldName}_snippets.json"
                     //
                     var i = 0
-                    for (jheta_file in jhetas_files) {
-                        println("Loading file ${jheta_file.first}")
-                        val jhetas = jacksonObjectMapper().readValue(
-                            File(jheta_file.first),
-                            Array<JSONHighlightedSource>::class.java
-                        )
-                        //
-                        var bruteAccAcc = 0.0
-                        //
-                        for (jheta in jhetas) {
-                            if (jheta.source.source.isNotEmpty() && jheta.hetas.isNotEmpty()) {
-                                if (i % 100 == 0)
-                                    print("\rOn JHETA number $i, ${bruteAccAcc / i}")
+                    println("Loading file ${snippetsFile}")
+                    val jhetas = jacksonObjectMapper().readValue(
+                        File(snippetsFile),
+                        Array<JSONHighlightedSource>::class.java
+                    )
+                    //
+                    var bruteAccAcc = 0.0
+                    //
+                    for (jheta in jhetas) {
+                        if (jheta.source.source.isNotEmpty() && jheta.hetas.isNotEmpty()) {
+                            if (i % 100 == 0)
+                                print("\rOn JHETA number $i, ${bruteAccAcc / i}")
 
-                                // Target task sequence.
-                                val targetHCharSeq =
-                                    jheta.hetas.toHChars(jheta.source.source).also { it.adaptedToInplace(taskAdapter) }
+                            // Target task sequence.
+                            val targetHCharSeq =
+                                jheta.hetas.toHChars(jheta.source.source).also { it.adaptedToInplace(taskAdapter) }
 
-                                // Run on brute.
-                                val accBrute =
-                                    if (jheta_file.second) {
-                                        var startRule: RuleContext? = null
-                                        jheta.source.source.tryToETAS(
-                                            lexerOf = lexerOf,
-                                            parserOf = parserOf,
-                                            startRuleOf = { startRuleOf(it).let { st -> startRule = st; st } },
-                                            resolver = ETAMarshaller::tryFromContext,
-                                            lexerChannels = lexerChannels,
-                                            withErrorListeners = false
-                                        )?.let { etas ->
-                                            val hetas = etas.highlightedAs { lexicalHighlighter(it) }
-                                            startRule?.let {
-                                                grammaticalHighlighter.reset() // Redundant.
-                                                ParseTreeWalker.DEFAULT.walk(grammaticalHighlighter, it)
-                                                OHighlight.applyOverrides(hetas, grammaticalHighlighter.getOverrides())
-                                                grammaticalHighlighter.reset()
-                                            }
-                                            // Oracle is always task 4 (66), hence always needs converting.
-                                            val brutePredHCharSeq =
-                                                hetas.toHChars(jheta.source.source)
-                                                    .also { it.adaptedToInplace(taskAdapter) }
-                                            charBaseAccOf(brutePredHCharSeq, targetHCharSeq)
-                                        } ?: 0.0
-                                    } else 1.0 // Brute force is always perfect ('jheta' already contains its output).
-                                bruteAccAcc += accBrute
-
-                                // Create log.
-                                val log = FileAccItem(
-                                    jheta.source.source.sourceToMD5FileId(),
-                                    jheta_file.second,
-                                    accBrute,
-                                )
-
-                                // Write to file
-                                if (i > 0)
-                                    telemetries_file.appendText(",\n")
-                                telemetries_file.appendText(jacksonObjectMapper().writeValueAsString(log))
-                                telemetries_file.appendText("\n")
-
-                                ++i
+                            // Run on brute.
+                            val accBrute = let{
+                                var startRule: RuleContext? = null
+                                jheta.source.source.tryToETAS(
+                                    lexerOf = lexerOf,
+                                    parserOf = parserOf,
+                                    startRuleOf = { startRuleOf(it).let { st -> startRule = st; st } },
+                                    resolver = ETAMarshaller::tryFromContext,
+                                    lexerChannels = lexerChannels,
+                                    withErrorListeners = false
+                                )?.let { etas ->
+                                    val hetas = etas.highlightedAs { lexicalHighlighter(it) }
+                                    startRule?.let {
+                                        grammaticalHighlighter.reset() // Redundant.
+                                        ParseTreeWalker.DEFAULT.walk(grammaticalHighlighter, it)
+                                        OHighlight.applyOverrides(hetas, grammaticalHighlighter.getOverrides())
+                                        grammaticalHighlighter.reset()
+                                    }
+                                    // Oracle is always task 4 (66), hence always needs converting.
+                                    val brutePredHCharSeq =
+                                        hetas.toHChars(jheta.source.source)
+                                            .also { it.adaptedToInplace(taskAdapter) }
+                                    charBaseAccOf(brutePredHCharSeq, targetHCharSeq)
+                                } ?: 0.0
                             }
+                            bruteAccAcc += accBrute
+
+                            // Create log.
+                            val log = FileAccItem(
+                                jheta.source.source.sourceToMD5FileId(),
+                                true,
+                                accBrute,
+                            )
+
+                            // Write to file
+                            if (i > 0)
+                                telemetries_file.appendText(",\n")
+                            telemetries_file.appendText(jacksonObjectMapper().writeValueAsString(log))
+                            telemetries_file.appendText("\n")
+
+                            ++i
                         }
-                        println()
                     }
                     //
                     telemetries_file.appendText("]\n")
