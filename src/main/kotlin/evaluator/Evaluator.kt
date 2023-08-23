@@ -117,20 +117,23 @@ abstract class Evaluator(
                             if (i % 100 == 0)
                                 print("\rOn JHETA number $i, ${modelAccAcc / i}")
 
-                            // Target task sequence.
-                            val targetHCharSeq =
-                                jheta.hetas.toHChars(jheta.source.source).also { it.adaptedToInplace(taskAdapter) }
-
                             // Run on model.
                             val inputTokenIds = jheta.hetas.map { it.eta.tokenRule }.toList()
                             val modRes = this.evalWithModel(inputTokenIds, modClient)
+                            var nonWhitespaceCharNum = 0
                             val accModel =
                                 modRes.ps.let { hCodes ->
-                                    val modelPredHetas =
-                                        jheta.hetas.zip(hCodes).map { it.first.copy(highlightCode = it.second) }
-                                            .toTypedArray()
-                                    val modelPredHCharSeq = modelPredHetas.toHChars(jheta.source.source)
-                                    charBaseAccOf(modelPredHCharSeq, targetHCharSeq)
+                                    var accAccuracy = 0.0
+                                    for (tokenIdx in hCodes.indices) {
+                                        val predictHcode = hCodes[tokenIdx]
+                                        val targetToken = jheta.hetas[tokenIdx]
+                                        val targetHcode = taskAdapter[targetToken.highlightCode]
+                                        val tokenSize = targetToken.eta.text.length
+                                        nonWhitespaceCharNum += tokenSize
+                                        val correctMul = if (targetHcode == predictHcode) 1 else 0
+                                        accAccuracy += correctMul * tokenSize
+                                    }
+                                    accAccuracy / nonWhitespaceCharNum
                                 }
                             modelAccAcc += accModel
 
