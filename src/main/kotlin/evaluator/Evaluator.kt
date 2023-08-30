@@ -120,20 +120,21 @@ abstract class Evaluator(
                             // Run on model.
                             val inputTokenIds = jheta.hetas.map { it.eta.tokenRule }.toList()
                             val modRes = this.evalWithModel(inputTokenIds, modClient)
-                            var nonWhitespaceCharNum = 0
                             val accModel =
                                 modRes.ps.let { hCodes ->
-                                    var accAccuracy = 0.0
+                                    var nonWhitespaceChars = 0
+                                    val numChars = jheta.source.source.length
+                                    var accAccuracy = 0.toDouble()
                                     for (tokenIdx in hCodes.indices) {
                                         val predictHcode = hCodes[tokenIdx]
                                         val targetToken = jheta.hetas[tokenIdx]
                                         val targetHcode = taskAdapter[targetToken.highlightCode]
                                         val tokenSize = targetToken.eta.text.length
-                                        nonWhitespaceCharNum += tokenSize
+                                        nonWhitespaceChars += tokenSize
                                         val correctMul = if (targetHcode == predictHcode) 1 else 0
                                         accAccuracy += correctMul * tokenSize
                                     }
-                                    accAccuracy / nonWhitespaceCharNum
+                                    (accAccuracy + numChars - nonWhitespaceChars)  / numChars.toDouble()
                                 }
                             modelAccAcc += accModel
 

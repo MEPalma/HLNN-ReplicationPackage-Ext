@@ -44,6 +44,7 @@ task Playground(type: JavaExec) {
 }
 
 task JavaPreprocessor(type: JavaExec) {
+    maxHeapSize("100096M")
     args findProperty("args").toString().split(" ") ?: ""
     mainClass.set('preprocessor.javapreprocessor.JavaPreprocessorKt')
     classpath = sourceSets.main.runtimeClasspath
@@ -52,6 +53,7 @@ task JavaPreprocessor(type: JavaExec) {
 // Example of running this task:
 // gradle JavaEvaluator -Pargs="runModelTimeBenchmarker ../saved_model_losses/java_.._.json false" > log.txt
 task JavaEvaluator(type: JavaExec) {
+    maxHeapSize("100096M")
     args findProperty("args").toString().split(" ") ?: ""
     mainClass.set('evaluator.JavaEvaluatorKt')
     classpath = sourceSets.main.runtimeClasspath
@@ -66,42 +68,49 @@ task JavaScriptPreprocessor(type: JavaExec) {
 }
 
 task JavaScriptEvaluator(type: JavaExec) {
+    maxHeapSize("100096M")
     args findProperty("args").toString().split(" ") ?: ""
     mainClass.set('evaluator.JavaScriptEvaluatorKt')
     classpath = sourceSets.main.runtimeClasspath
 }
 
 task KotlinPreprocessor(type: JavaExec) {
+    maxHeapSize("100096M")
     args findProperty("args").toString().split(" ") ?: ""
     mainClass.set('preprocessor.javascriptpreprocessor.JavaScriptPreprocessorKt')
     classpath = sourceSets.main.runtimeClasspath
 }
 
 task KotlinEvaluator(type: JavaExec) {
+    maxHeapSize("100096M")
     args findProperty("args").toString().split(" ") ?: ""
     mainClass.set('evaluator.KotlinEvaluatorKt')
     classpath = sourceSets.main.runtimeClasspath
 }
 
 task Python3Preprocessor(type: JavaExec) {
+    maxHeapSize("100096M")
     args findProperty("args").toString().split(" ") ?: ""
     mainClass.set('preprocessor.python3preprocessor.Python3PreprocessorKt')
     classpath = sourceSets.main.runtimeClasspath
 }
 
 task Python3Evaluator(type: JavaExec) {
+    maxHeapSize("100096M")
     args findProperty("args").toString().split(" ") ?: ""
     mainClass.set('evaluator.Python3EvaluatorKt')
     classpath = sourceSets.main.runtimeClasspath
 }
 
 task CPPPreprocessor(type: JavaExec) {
+    maxHeapSize("100096M")
     args findProperty("args").toString().split(" ") ?: ""
     mainClass.set('preprocessor.cpp.CPPPreprocessorKt')
     classpath = sourceSets.main.runtimeClasspath
 }
 
 task CPPEvaluator(type: JavaExec) {
+    maxHeapSize("100096M")
     args findProperty("args").toString().split(" ") ?: ""
     mainClass.set('evaluator.CPPEvaluatorKt')
     classpath = sourceSets.main.runtimeClasspath
@@ -115,6 +124,7 @@ task CSharpPreprocessor(type: JavaExec) {
 }
 
 task CSharpEvaluator(type: JavaExec) {
+    maxHeapSize("100096M")
     args findProperty("args").toString().split(" ") ?: ""
     mainClass.set('evaluator.CSharpEvaluatorKt')
     classpath = sourceSets.main.runtimeClasspath
