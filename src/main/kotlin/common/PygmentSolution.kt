@@ -13,5 +13,17 @@ data class PygmentSol(
 
         fun PygmentRawSolSeq.toPygmentSols(): Array<PygmentSol> =
             this.map { it.toPygmentSol() }.toTypedArray()
+
+        fun PygmentRawSolSeq.toLookUpHCode(): List<Int> {
+            val hCodes = mutableListOf<Int>()
+            for (rawSol in this) {
+                val tokValue = rawSol[2].toInt()
+                for (c in 0 until rawSol[0].length) {
+                    hCodes.add(tokValue)
+                }
+            }
+            return hCodes
+        }
+
     }
 }

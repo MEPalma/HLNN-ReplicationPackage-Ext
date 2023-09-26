@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import common.*
 import common.JSONSourceMarshaller.Companion.sourceToMD5FileId
 import common.JSONSourceMarshaller.Companion.tryJSONHighlightedSourceFromJSON
+import common.PygmentSol.Companion.toLookUpHCode
 import common.PygmentSol.Companion.toPygmentSols
 import highlighter.GrammaticalHighlighter
 import highlighter.highlightedAs
@@ -30,6 +31,7 @@ import javax.swing.JFrame
 import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JTextPane
+import kotlin.collections.HashSet
 
 abstract class Evaluator(
     val userArgs: Array<String>,
@@ -134,7 +136,7 @@ abstract class Evaluator(
                                         val correctMul = if (targetHcode == predictHcode) 1 else 0
                                         accAccuracy += correctMul * tokenSize
                                     }
-                                    (accAccuracy + numChars - nonWhitespaceChars)  / numChars.toDouble()
+                                    (accAccuracy + numChars - nonWhitespaceChars) / numChars.toDouble()
                                 }
                             modelAccAcc += accModel
 
@@ -193,21 +195,28 @@ abstract class Evaluator(
                                 if (i % 100 == 0)
                                     print("\rOn JHETA number $i, ${pygmAccAcc / i}")
 
-                                // Target task sequence.
-                                val targetHCharSeq =
-                                    jheta.hetas.toHChars(jheta.source.source).also { it.adaptedToInplace(taskAdapter) }
-
                                 // Run on pygments.
                                 val pygRes = this.evalWithPygments(jheta.source.source, pygClient)
                                 val accPygm =
                                     pygRes.res_json.let { strPygmentsTokenBindings ->
                                         jacksonObjectMapper().readValue<PygmentRawSolSeq?>(strPygmentsTokenBindings)
                                             ?.let { pygmentsTokenBindings ->
-                                                // Pygments is always task 4 (66), hence always needs converting.
-                                                val pygPredHCharSeq =
-                                                    pygmentsTokenBindings.toPygmentSols().toHChars(jheta.source.source)
-                                                        .also { it.adaptedToInplace(taskAdapter) }
-                                                charBaseAccOf(pygPredHCharSeq, targetHCharSeq)
+                                                val pygsHCodes = pygmentsTokenBindings.toLookUpHCode()
+                                                val numChars = jheta.source.source.length
+                                                var nonWhitespaceChars = 0
+                                                var accAccuracy = 0.toDouble()
+                                                for (heta in jheta.hetas) {
+                                                    if (heta.eta.startIndex >= 0 && heta.eta.stopIndex >= 0) {
+                                                        nonWhitespaceChars += heta.eta.text.length
+                                                        val targetHcode = taskAdapter[heta.highlightCode]
+                                                        for (charIdx in heta.eta.startIndex..heta.eta.stopIndex) {
+                                                            if (charIdx <= pygsHCodes.lastIndex && taskAdapter[pygsHCodes[charIdx]] == targetHcode) {
+                                                                accAccuracy += 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                (accAccuracy + numChars - nonWhitespaceChars) / numChars.toDouble()
                                             } ?: error("No valid acc Pygm 2 for $jheta.")
                                     } ?: error("No valid acc Pygm 1 for $jheta.")
                                 pygmAccAcc += accPygm
@@ -267,7 +276,7 @@ abstract class Evaluator(
                                 jheta.hetas.toHChars(jheta.source.source).also { it.adaptedToInplace(taskAdapter) }
 
                             // Run on brute.
-                            val accBrute = let{
+                            val accBrute = let {
                                 var startRule: RuleContext? = null
                                 jheta.source.source.tryToETAS(
                                     lexerOf = lexerOf,
@@ -334,6 +343,49 @@ abstract class Evaluator(
         val logFile = File("$logOutputFilePath/perFileSize.json")
         sizes.sortByDescending { fileSizeItem -> fileSizeItem.ntoks }
         logFile.writeText(jacksonObjectMapper().writeValueAsString(sizes))
+    }
+
+    private fun oracleIndex() {
+        val indexItems = mutableListOf<OracleIndexItem>()
+        File("$oracleFileSourcesPath/oracle/jhetas_clean.json").bufferedReader().forEachLine { line ->
+            line.tryJSONHighlightedSourceFromJSON()?.let { jheta ->
+                val source = jheta.source.source
+                val sourceId = source.sourceToMD5FileId()
+                indexItems.add(
+                    OracleIndexItem(
+                        id = sourceId,
+                        url = jheta.source.file.url ?: "Unavailable",
+                        source = source
+                    )
+                )
+            }
+        }
+        File("$logOutputFilePath/oracleIndex.json")
+            .writeText(jacksonObjectMapper().writeValueAsString(indexItems))
+
+        val snipIndexes = HashSet<String>()
+        val snipIndexesList = mutableListOf<OracleIndexItem>()
+        for (foldName in 0..2) {
+            val jhetas = jacksonObjectMapper().readValue(
+                File("$oracleFileSourcesPath/folds/fold${foldName}_snippets.json"),
+                Array<JSONHighlightedSource>::class.java
+            )
+            jhetas.forEach { jheta ->
+                val source = jheta.source.source
+                val sourceId = source.sourceToMD5FileId()
+                if (snipIndexes.add(sourceId)) {
+                    snipIndexesList.add(
+                        OracleIndexItem(
+                            id = sourceId,
+                            url = jheta.source.file.url ?: "Unavailable",
+                            source = source
+                        )
+                    )
+                }
+            }
+        }
+        File("$logOutputFilePath/snipIndex.json")
+            .writeText(jacksonObjectMapper().writeValueAsString(snipIndexesList))
     }
 
     private fun perFileTimeModel(modelLogName: String, repeats: Int) {
@@ -696,6 +748,9 @@ abstract class Evaluator(
 
             "perFileSize" ->
                 perFileSize()
+
+            "oracleIndex" ->
+                oracleIndex()
 
             else -> println("Unknown task arguments ${userArgs.toList()}")
         }
