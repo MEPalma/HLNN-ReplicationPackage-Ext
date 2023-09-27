@@ -48,7 +48,6 @@ done
 ./gradlew KotlinEvaluator -Pargs="perFileAccPygments"
 ./gradlew Python3Evaluator -Pargs="perFileAccPygments"
 ./gradlew CPPEvaluator -Pargs="perFileAccPygments"
-./gradlew CSharpEvaluator -Pargs="perFileAccPygments"
 
 ./gradlew CSharpEvaluator -Pargs="perFileAccBrute"
 ./gradlew JavaScriptEvaluator -Pargs="perFileAccBrute"
@@ -56,5 +55,4 @@ done
 ./gradlew KotlinEvaluator -Pargs="perFileAccBrute"
 ./gradlew Python3Evaluator -Pargs="perFileAccBrute"
 ./gradlew CPPEvaluator -Pargs="perFileAccBrute"
-./gradlew CSharpEvaluator -Pargs="perFileAccBrute"
 

@@ -133,7 +133,7 @@ class Python3GrammaticalHighlighter : Python3ParserBaseListener(), GrammaticalHi
         while (!fringe.isEmpty()) {
             val pt = fringe.pop()
             pt.isTerminal(Python3Lexer.NAME)?.let { action(it) } ?: pt.isProduction()
-                ?.let { p -> p.children.forEach { fringe.push(it) } }
+                ?.let { p -> p.children?.forEach { fringe.push(it) } }
         }
     }
 
