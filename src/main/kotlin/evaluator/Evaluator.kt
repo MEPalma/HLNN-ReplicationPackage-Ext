@@ -336,7 +336,9 @@ abstract class Evaluator(
                 val sourceId = source.sourceToMD5FileId()
                 val ntoks = jheta.hetas.size
                 val nchars = source.length
-                sizes.add(FileSizeItem(sourceId, ntoks, nchars))
+                val whitespace = source.count { it.isWhitespace() }
+                val lines = source.lines().size
+                sizes.add(FileSizeItem(sourceId, ntoks, nchars, whitespace, lines))
             }
         }
 

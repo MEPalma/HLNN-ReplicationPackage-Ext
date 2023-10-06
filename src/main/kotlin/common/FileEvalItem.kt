@@ -15,4 +15,6 @@ data class FileSizeItem(
     val fileId: String,
     val ntoks: Int,
     val nchars: Int,
+    val whitespace: Int,
+    val lines: Int
 )
