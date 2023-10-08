@@ -180,7 +180,6 @@ abstract class Evaluator(
                         Pair("$oracleFileSourcesPath/folds/fold${foldName}_snippets.json", true)
                     )
                     //
-                    var i = 0
                     for (jheta_file in jhetas_files) {
                         println("Loading file ${jheta_file.first}")
                         val jhetas = jacksonObjectMapper().readValue(
@@ -190,11 +189,9 @@ abstract class Evaluator(
                         //
                         var pygmAccAcc = 0.0
                         //
+                        var i = 0
                         for (jheta in jhetas) {
                             if (jheta.source.source.isNotEmpty() && jheta.hetas.isNotEmpty()) {
-                                if (i % 100 == 0)
-                                    print("\rOn JHETA number $i, ${pygmAccAcc / i}")
-
                                 // Run on pygments.
                                 val pygRes = this.evalWithPygments(jheta.source.source, pygClient)
                                 val accPygm =
@@ -206,10 +203,12 @@ abstract class Evaluator(
                                                 var nonWhitespaceChars = 0
                                                 var accAccuracy = 0.toDouble()
                                                 for (heta in jheta.hetas) {
-                                                    if (heta.eta.startIndex >= 0 && heta.eta.stopIndex >= 0) {
+                                                    val startIdx = heta.eta.startIndex
+                                                    val stopIdx = heta.eta.stopIndex
+                                                    if (startIdx >= 0 && stopIdx >= startIdx) {
                                                         nonWhitespaceChars += heta.eta.text.length
                                                         val targetHcode = taskAdapter[heta.highlightCode]
-                                                        for (charIdx in heta.eta.startIndex..heta.eta.stopIndex) {
+                                                        for (charIdx in startIdx..stopIdx) {
                                                             if (charIdx <= pygsHCodes.lastIndex && taskAdapter[pygsHCodes[charIdx]] == targetHcode) {
                                                                 accAccuracy += 1
                                                             }
