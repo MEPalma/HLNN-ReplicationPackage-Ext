@@ -179,6 +179,7 @@ abstract class Evaluator(
                         Pair("$oracleFileSourcesPath/folds/fold${foldName}_testing.json", false),
                         Pair("$oracleFileSourcesPath/folds/fold${foldName}_snippets.json", true)
                     )
+                    var i = 0
                     //
                     for (jheta_file in jhetas_files) {
                         println("Loading file ${jheta_file.first}")
@@ -189,7 +190,6 @@ abstract class Evaluator(
                         //
                         var pygmAccAcc = 0.0
                         //
-                        var i = 0
                         for (jheta in jhetas) {
                             if (jheta.source.source.isNotEmpty() && jheta.hetas.isNotEmpty()) {
                                 // Run on pygments.
